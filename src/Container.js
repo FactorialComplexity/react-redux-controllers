@@ -5,38 +5,45 @@ class Mapper {
     constructor(mappings) {
         this.mappings = mappings.map((mapping) => {
             if (typeof mapping === "string") {
-                return {
+                return [{
                     controllerName: mapping,
                     prop: undefined,
                     mapStateToProps: (controller, state, ownProps) => controller.mapStateToProps(state, ownProps),
                     mapDispatchToProps: (controller, dispatch, ownProps) => controller.mapDispatchToProps(dispatch, ownProps)
-                };
+                }];
             } else {
                 const keys = Object.keys(mapping);
-                if (keys.length !== 1) {
-                    throw new Error("Invalid mappings format, controller name not found");
-                }
-                const controllerName = keys[0];
-                mapping = mapping[controllerName];
-                
-                return {
-                    controllerName,
-                    prop: mapping.prop,
-                    mapStateToProps: mapping.mapStateToProps ?
-                        mapping.mapStateToProps :
-                        (controller, state, ownProps) => controller.mapStateToProps(state, ownProps, {
-                            pickProps: mapping.pickProps,
-                            omitProps: mapping.omitProps,
-                        }),
-                    mapDispatchToProps: mappings.mapDispatchToProps ?
-                        mapping.mapDispatchToProps :
-                        (controller, dispatch, ownProps) => controller.mapDispatchToProps(dispatch, ownProps, {
-                            pickProps: mapping.pickProps,
-                            omitProps: mapping.omitProps,
-                        })
-                };
+                return keys.map((controllerName) => {
+                    mapping = mapping[controllerName];
+                    
+                    const overrideProps = { };
+                    for (var propKey in mapping) {
+                        if (!/^\$/.test(propKey)) {
+                            overrideProps[propKey] = mapping[propKey];
+                        }
+                    }
+                    
+                    return {
+                        controllerName,
+                        prop: mapping.$prop,
+                        mapStateToProps: mapping.$mapStateToProps ?
+                            mapping.$mapStateToProps :
+                            (controller, state, ownProps) => controller.mapStateToProps(state, ownProps, {
+                                pickProps: mapping.$pickProps,
+                                omitProps: mapping.$omitProps,
+                                overrideProps
+                            }),
+                        mapDispatchToProps: mappings.$mapDispatchToProps ?
+                            mapping.$mapDispatchToProps :
+                            (controller, dispatch, ownProps) => controller.mapDispatchToProps(dispatch, ownProps, {
+                                pickProps: mapping.$pickProps,
+                                omitProps: mapping.$omitProps,
+                                overrideProps
+                            })
+                    };
+                });
             }
-        });
+        }).reduce((acc, cur) => acc.concat(cur), []); // flatten array
     }
     
     controllersNames() {
