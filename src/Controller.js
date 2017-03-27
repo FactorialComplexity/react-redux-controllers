@@ -68,6 +68,14 @@ export default class Controller {
         });
         return innerState;
     }
+    
+    $(state) {
+        let innerState = state;
+        this[_mountPath].forEach((key) => {
+            innerState = innerState[key];
+        });
+        return innerState;
+    }
 
     reducer() {
         // to be overriden in children
