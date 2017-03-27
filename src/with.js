@@ -51,12 +51,16 @@ export function withController(WrappedComponent, controllerName, ...otherControl
             if (application) {
                 controllers = { };
                 controllers[controllerName] = controller;
+                
+                if (!controller)
+                    console.warn('WARNING: Controller "' + controllerName + '" is not registered')
+                
                 if (otherControllerNames) {
                     for (var otherControllerName of otherControllerNames) {
                         controllers[otherControllerName] = application.getController(controllerName);
                         
                         if (!controllers[otherControllerName]) {
-                            console.log('WARNING: Controller ' + otherControllerName + ' is not registered')
+                            console.warn('WARNING: Controller "' + otherControllerName + '" is not registered')
                         }
                     }
                 }
