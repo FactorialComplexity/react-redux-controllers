@@ -7,15 +7,16 @@ const _actions = Symbol('actions');
 
 
 const getAllClassMethods = (obj) => {
-    let keys = []
+    let keys = [], topObject = obj;
+    
     do {
         const l = Object.getOwnPropertyNames(obj)
             .sort()
             .filter((p, i, arr) =>
-                typeof obj[p] === 'function' &&  //only the methods
+                typeof topObject[p] === 'function' &&  //only the methods
                 p !== 'constructor' &&           //not the constructor
                 (i == 0 || p !== arr[i - 1]) &&  //not overriding in this prototype
-                keys.indexOf(p) === -1          //not overridden in a child
+                keys.indexOf(p) === -1           //not overridden in a child
             );
         keys = keys.concat(l);
     }
