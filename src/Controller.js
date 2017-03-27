@@ -1,12 +1,15 @@
+import Action from "./utils/Action";
+
 const _application = Symbol('application');
 const _mountPath = Symbol('mountPath');
 const _mountPathString = Symbol('mountPathString');
+const _actions = Symbol('actions');
+
 
 const getAllClassMethods = (obj) => {
     let keys = []
     do {
         const l = Object.getOwnPropertyNames(obj)
-            .concat(Object.getOwnPropertySymbols(obj).map(s => s.toString()))
             .sort()
             .filter((p, i, arr) =>
                 typeof obj[p] === 'function' &&  //only the methods
@@ -29,6 +32,7 @@ export default class Controller {
         this[_application] = application;
         this[_mountPath] = mountPath;
         this[_mountPathString] = mountPath.join('.');
+        this[_actions] = { };
     }
 
     get application() {
@@ -41,6 +45,19 @@ export default class Controller {
 
     get mountPathString() {
         return this[_mountPathString];
+    }
+    
+    get actions() {
+        return this[_actions];
+    }
+    
+    addAction(action) {
+        const key = action;
+        if (typeof action === "string") {
+            action = new Action(this[_mountPath] + "." + action);
+        }
+        
+        this[_actions][key] = action;
     }
     
     rootState(state) {
@@ -65,7 +82,6 @@ export default class Controller {
     
     mapStateToProps(state, context, { pickProps, omitProps } = { }) {
         const props = { };
-        
         getAllClassMethods(this).forEach((key) => {
             if (!((!(pickProps && pickProps.indexOf(propName) === -1) ||
                 !(omitProps && omitProps.indexOf(propName) !== -1)) && !this[key].doNotMap))
