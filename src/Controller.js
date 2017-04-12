@@ -52,13 +52,21 @@ export default class Controller {
         return this[_actions];
     }
     
-    addAction(action) {
+    createAction(action) {
         const key = action;
         if (typeof action === "string") {
             action = new Action(this[_mountPath] + "." + action);
         }
         
         this[_actions][key] = action;
+    }
+    
+    dispatchAction(actionType, payload) {
+        const dotI = actionType.indexOf(".");
+        const actionBaseType = dotI === -1 ? actionType : actionType.substring(0, dotI);
+        const actionStage = dotI === -1 ? undefined : actionType.substring(dotI+1);
+        
+        this.application.store.dispatch(this.actions[actionBaseType].action(actionStage, payload));
     }
     
     rootState(state) {

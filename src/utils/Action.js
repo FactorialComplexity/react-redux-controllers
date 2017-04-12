@@ -1,9 +1,9 @@
 export default class Action {
     static get Stage() {
         return {
-            STARTED: 'STARTED',
-            SUCCESS: 'SUCCESS',
-            ERROR: 'ERROR'
+            STARTED: 'started',
+            SUCCESS: 'success',
+            ERROR: 'error'
         };
     }
 
