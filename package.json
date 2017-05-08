@@ -1,8 +1,8 @@
 {
   "name": "react-redux-controllers",
-  "version": "1.0.0-3",
+  "version": "1.0.0-6",
   "description": "",
-  "main": "./lib/index.js",
+  "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "scripts": {
@@ -18,14 +18,17 @@
   "author": "Vitaliy Ivanov",
   "license": "ISC",
   "dependencies": {
-    "react": "^15.4.2",
     "react-redux": "^5.0.3",
     "redux": "^3.6.0",
     "redux-logger": "^3.0.0",
     "redux-persist": "^4.5.0",
     "redux-thunk": "^2.2.0"
   },
+  "peerDependencies": {
+    "react": "^15.4.2"
+  },
   "devDependencies": {
+    "react": "^15.4.2",
     "babel-cli": "^6.3.17",
     "babel-core": "^6.3.26",
     "babel-eslint": "^7.1.1",
@@ -63,6 +66,12 @@
     "rimraf": "^2.3.4",
     "webpack": "^1.11.0"
   },
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "src"
+  ],
   "browserify": {
     "transform": [
       "loose-envify"
