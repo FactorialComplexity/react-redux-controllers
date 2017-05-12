@@ -1,6 +1,6 @@
 {
   "name": "react-redux-controllers",
-  "version": "1.0.0-6",
+  "version": "1.0.0-7",
   "description": "",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -25,10 +25,10 @@
     "redux-thunk": "^2.2.0"
   },
   "peerDependencies": {
-    "react": "^15.4.2"
+    "react": "^15.4.0"
   },
   "devDependencies": {
-    "react": "^15.4.2",
+    "react": "^15.4.0",
     "babel-cli": "^6.3.17",
     "babel-core": "^6.3.26",
     "babel-eslint": "^7.1.1",
