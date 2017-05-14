@@ -105,13 +105,18 @@ export default class Controller {
         
         getAllClassMethods(this).forEach((key) => {
             if (!((!(pickProps && pickProps.indexOf(propName) === -1) ||
-                !(omitProps && omitProps.indexOf(propName) !== -1)) && !this[key].doNotMap))
+                !(omitProps && omitProps.indexOf(propName) !== -1)) &&
+                !this[key].doNotMap &&
+                !this[key].mapAsDispatch))
             {
                 return;
             }
             
             var shouldMap = false, propName;
-            if (/^get/.test(key)) {
+            if (this[key].mapAsStateFunction) {
+                shouldMap = true;
+                propName = key;
+            } else if (/^get/.test(key)) {
                 shouldMap = true;
                 propName = key.substring(3, 4).toLowerCase() + key.substring(4);
             } else if (/^is/.test(key)) {
@@ -129,7 +134,11 @@ export default class Controller {
                             overrideProps[propName];
                     }
                 } else {
-                    props[propName] = this[key](state, context);
+                    if (this[key].mapAsStateFunction) {
+                        props[propName] = (...args) => this[key](...args, state, context);
+                    } else {
+                        props[propName] = this[key](state, context);
+                    }
                 }
             }
         });
@@ -147,7 +156,9 @@ export default class Controller {
             "afterRehydrate",
             "mapStateToProps",
             "mapDispatchToProps",
-            "doNotMap"
+            "doNotMap",
+            "mapAsStateFunction",
+            "mapAsDispatch"
         ];
         
         if (!overrideProps) {
@@ -155,9 +166,10 @@ export default class Controller {
         }
         
         getAllClassMethods(this).forEach((key) => {
-            if (!/^(get|_)/.test(key) && !/^(is|_)/.test(key) &&
+            if (((!/^(get|_)/.test(key) && !/^(is|_)/.test(key)) || this[key].mapAsDispatch) &&
                 defaultOmitFunctions.indexOf(key) === -1 &&
-                !this[key].doNotMap)
+                !this[key].doNotMap &&
+                !this[key].mapAsStateFunction)
             {
                 if (overrideProps[key]) {
                     if (typeof overrideProps[key] === "function") {
@@ -179,6 +191,18 @@ export default class Controller {
     doNotMap(...functions) {
         functions.forEach((func) => {
             func.doNotMap = true;
+        });
+    }
+    
+    mapAsStateFunction(...functions) {
+        functions.forEach((func) => {
+            func.mapAsStateFunction = true;
+        });
+    }
+    
+    mapAsDispatch(...functions) {
+        functions.forEach((func) => {
+            func.mapAsDispatch = true;
         });
     }
 
