@@ -52,13 +52,12 @@ export default class Controller {
         return this[_actions];
     }
     
-    createAction(action) {
-        const key = action;
+    createAction(action, key) {
         if (typeof action === "string") {
-            action = new Action(this[_mountPath] + "." + action);
+            this[_actions][action] = new Action(this[_mountPath] + "." + action);
+        } else {
+            this[_actions][key || action.type()] = action;
         }
-        
-        this[_actions][key] = action;
     }
     
     dispatchAction(actionType, payload) {
