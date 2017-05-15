@@ -57,7 +57,7 @@ export function withController(WrappedComponent, controllerName, ...otherControl
                 
                 if (otherControllerNames) {
                     for (var otherControllerName of otherControllerNames) {
-                        controllers[otherControllerName] = application.getController(controllerName);
+                        controllers[otherControllerName] = application.getController(otherControllerName);
                         
                         if (!controllers[otherControllerName]) {
                             console.warn('WARNING: Controller "' + otherControllerName + '" is not registered')
