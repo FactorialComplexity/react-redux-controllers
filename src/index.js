@@ -5,5 +5,4 @@ export {withApplication, withController} from './with';
 
 export {default as Container} from './Container';
 
-export {default as Action} from './utils/Action';
-export {default as SimpleOperation} from './utils/SimpleOperation';
+export {default as Action} from './Action';

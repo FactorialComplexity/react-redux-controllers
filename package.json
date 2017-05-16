@@ -18,17 +18,14 @@
   "author": "Vitaliy Ivanov",
   "license": "ISC",
   "dependencies": {
-    "react-redux": "^5.0.3",
-    "redux": "^3.6.0",
-    "redux-logger": "^3.0.0",
-    "redux-persist": "^4.5.0",
-    "redux-thunk": "^2.2.0"
+    "prop-types": "^15.5.10"
   },
   "peerDependencies": {
-    "react": "^15.4.0"
+    "react": "^15.4.0",
+    "react-redux": "^5.0.4",
+    "redux": "^3.6.0"
   },
   "devDependencies": {
-    "react": "^15.4.0",
     "babel-cli": "^6.3.17",
     "babel-core": "^6.3.26",
     "babel-eslint": "^7.1.1",
@@ -63,6 +60,9 @@
     "eslint": "^3.3.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-react": "^6.1.1",
+    "react": "^15.4.0",
+    "react-redux": "^5.0.4",
+    "redux": "^3.6.0",
     "rimraf": "^2.3.4",
     "webpack": "^1.11.0"
   },

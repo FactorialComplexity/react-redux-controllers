@@ -1,4 +1,4 @@
-import Action from "./utils/Action";
+import Action from "./Action";
 
 const _application = Symbol('application');
 const _mountPath = Symbol('mountPath');
@@ -88,11 +88,7 @@ export default class Controller {
         // to be overriden in children
     }
 
-    beforeRun() {
-        // to be overriden in children
-    }
-
-    afterRehydrate() {
+    afterCreateStore() {
         // to be overriden in children
     }
     
@@ -152,8 +148,7 @@ export default class Controller {
             "rootState",
             "$",
             "reducer",
-            "beforeRun",
-            "afterRehydrate",
+            "afterCreateStore",
             "mapStateToProps",
             "mapDispatchToProps",
             "doNotMap",

@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import hoistStatics from 'hoist-non-react-statics';
 
 const {shape, func, object} = PropTypes;
@@ -35,13 +36,8 @@ export function withApplication(WrappedComponent) {
 }
 
 export function withController(WrappedComponent, controllerName, ...otherControllerNames) {
-    var WithController = React.createClass({
-        displayName: 'WithController',
-
-        contextTypes: { application: applicationShape },
-        propTypes: { application: applicationShape },
-
-        render: function render() {
+    class WithController extends Component {
+        render() {
             var _this = this;
             
             var application = this.props.application || this.context.application;
@@ -73,8 +69,11 @@ export function withController(WrappedComponent, controllerName, ...otherControl
             
             return React.createElement(WrappedComponent, props);
         }
-    });
-
+    }
+    
+    
+    WithController.contextTypes = { application: applicationShape }
+    WithController.propTypes = { application: applicationShape }
     WithController.displayName = 'withController(' + getDisplayName(WrappedComponent) + ')';
     WithController.WrappedComponent = WrappedComponent;
 
