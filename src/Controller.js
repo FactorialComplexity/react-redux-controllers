@@ -84,6 +84,10 @@ export default class Controller {
         return innerState;
     }
 
+    createReducer(...args) {
+        return Action.createReducer(...args);
+    }
+
     reducer() {
         // to be overriden in children
     }
