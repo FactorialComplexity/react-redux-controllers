@@ -1,8 +1,9 @@
 import Action from "./Action";
 
-const _application = Symbol('application');
-const _mountPath = Symbol('mountPath');
-const _mountPathString = Symbol('mountPathString');
+export const _applicationKey = Symbol('application');
+export const _mountPathKey = Symbol('mountPath');
+export const _mountPathStringKey = Symbol('mountPathString');
+
 const _actions = Symbol('actions');
 
 
@@ -30,22 +31,19 @@ const getAllClassMethods = (obj) => {
 
 export default class Controller {
     constructor(application, mountPath) {
-        this[_application] = application;
-        this[_mountPath] = mountPath;
-        this[_mountPathString] = mountPath.join('.');
         this[_actions] = { };
     }
 
     get application() {
-        return this[_application];
+        return this[_applicationKey];
     }
 
     get mountPath() {
-        return this[_mountPath];
+        return this[_mountPathKey];
     }
 
     get mountPathString() {
-        return this[_mountPathString];
+        return this[_mountPathStringKey];
     }
     
     get actions() {
@@ -54,7 +52,7 @@ export default class Controller {
     
     createAction(action, key) {
         if (typeof action === "string") {
-            this[_actions][action] = new Action(this[_mountPath] + "." + action);
+            this[_actions][action] = new Action(this[_mountPathKey] + "/" + action);
         } else {
             this[_actions][key || action.type()] = action;
         }
@@ -70,7 +68,7 @@ export default class Controller {
     
     rootState(state) {
         let innerState = state;
-        this[_mountPath].forEach((key) => {
+        this[_mountPathKey].forEach((key) => {
             innerState = innerState[key];
         });
         return innerState;
@@ -78,7 +76,7 @@ export default class Controller {
     
     $(state) {
         let innerState = state;
-        this[_mountPath].forEach((key) => {
+        this[_mountPathKey].forEach((key) => {
             innerState = innerState[key];
         });
         return innerState;
@@ -92,7 +90,11 @@ export default class Controller {
         // to be overriden in children
     }
 
-    afterCreateStore() {
+    /**
+     * Executed for all controllers when Application.mount() was called.
+     * At this point all of the controllers are created and store is initialized.
+     */
+    controllerDidMount() {
         // to be overriden in children
     }
     
@@ -151,10 +153,14 @@ export default class Controller {
         const defaultOmitFunctions = [
             "rootState",
             "$",
+            "createReducer",
+            
             "reducer",
-            "afterCreateStore",
+            "controllerDidMount",
+            
             "mapStateToProps",
             "mapDispatchToProps",
+            
             "doNotMap",
             "mapAsStateFunction",
             "mapAsDispatch"
@@ -203,12 +209,5 @@ export default class Controller {
         functions.forEach((func) => {
             func.mapAsDispatch = true;
         });
-    }
-
-    static named(name) {
-        return {
-            cls: this,
-            name: name
-        };
     }
 }

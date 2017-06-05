@@ -3,87 +3,75 @@ import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 
 import { applicationShape } from './with'
+import { _applicationKey, _mountPathKey, _mountPathStringKey } from './Controller';
 
-const _controllers = Symbol('controllers');
-const _store = Symbol('store');
-const _options = Symbol('options');
-const _controllerName = Symbol('controllerName');
+const _controllersKey = Symbol('controllers');
+const _storeKey = Symbol('store');
 
 export default class Application {
     constructor() {
-        this[_controllers] = { };
+        this[_controllersKey] = { };
     }
 
     get store() {
-        return this[_store];
+        return this[_storeKey];
     }
 
-    register(controller, ...args) {
-        if (this.store) {
-            throw new Error("Cannot register controllers after createStore() was called");
-        }
-        
-        let cls, name;
-
-        if (typeof controller === 'function') {
-            cls = controller;
-            name = controller.controllerName;
-
-            if (!name) {
-                throw new Error(`Name was not specified for ${cls.name}. ` +
-                    `Either define controllerName class property, or use .named()`);
-            }
-        } else if (controller && controller.cls) {
-            cls = controller.cls;
-            name = controller.name;
-        } else {
-            throw new Error('Invalid controller. Class expected');
-        }
-
-        const instance = new cls(...[this, [name]].concat(args));
-        if (this[_controllers][name]) {
-            console.log(`WARNING: Controller for name "${name}" was already registered, overwriting`);
-        }
-        instance[_controllerName] = name;
-
-        this[_controllers][name] = instance;
-    }
-
-    getController(name) {
-        return this[_controllers][name];
-    }
-
-    getControllerName(controller) {
-        return controller[_controllerName];
+    getController(key) {
+        return this[_controllersKey][key];
     }
     
-    createStore(preloadedState, enhancer) {
-        let reducers = { };
-        let hasReducers = false;
-        for (const controllerKey in this[_controllers]) { // eslint-disable-line guard-for-in
-            const controller = this[_controllers][controllerKey];
-            const reducer = controller.reducer();
-            if (reducer) {
-                reducers[controllerKey] = reducer;
-                hasReducers = true;
+    createStore(reducers, preloadedState, enhancer) {
+        const _prepareReducers = (reducer, path) => {
+            if (typeof reducer === "function") {
+                
+                // Assume ready to use reducer function
+                return reducer;
+            
+            } else if (reducer && typeof reducer.reducer === "function") {
+               
+                // Assume this is a Controller
+                reducer[_applicationKey] = this;
+                
+                reducer[_mountPathKey] = path;
+                reducer[_mountPathStringKey] = path.join(".");
+                
+                this[_controllersKey][reducer[_mountPathStringKey]] = reducer;
+                return reducer.reducer();
+                
+            } else if (reducer !== undefined && reducer !== null) {
+                
+                // Only left to assume that we are dealing with { key: reducer } style object
+                // This function pretty much repeats Redux combineReducers, but adds recursiveness
+                const reducers = reducer;
+                const reducerKeys = Object.keys(reducers);
+                const preparedReducers = { };
+                for (let i = 0; i < reducerKeys.length; ++i) {
+                    const key = reducerKeys[i]
+                    preparedReducers[key] = _prepareReducers(reducers[key], path.concat(key));
+                }
+                
+                return preparedReducers;
+                
+            } else {
+                // Something is wrong, but let combineReducers handle this
+                return reducer;
             }
         }
         
-        this[_store] = createStore(
-            hasReducers ? combineReducers(reducers) : () => ({ }),
+        let reducer = _prepareReducers(reducers);
+        if (typeof reducer !== "function") {
+            reducer = combineReducers();
+        }
+        
+        return this[_storeKey] = createStore(
+            reducer,
             preloadedState,
             enhancer
         );
-        
-        for (const controllerKey in this[_controllers]) { // eslint-disable-line guard-for-in
-            const controller = this[_controllers][controllerKey];
-            controller.afterCreateStore();
-        }
-        
-        return this[_store];
     }
     
-    wrap(component) {
+    mount(component) {
         const application = this;
         class ApplicationRoot extends Component {
             getChildContext() {
@@ -103,8 +91,15 @@ export default class Application {
             application: applicationShape
         };
 
-        return <ApplicationRoot store={this.store}>
+        const mounted = <ApplicationRoot store={this.store}>
             {component}
         </ApplicationRoot>;
+        
+        for (const controllerKey in this[_controllersKey]) { // eslint-disable-line guard-for-in
+            const controller = this[_controllersKey][controllerKey];
+            controller.controllerDidMount();
+        }
+        
+        return mounted;
     }
 }
