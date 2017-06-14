@@ -1,3 +1,5 @@
+const $$initial = Symbol('initial');
+
 export default class Action {
     static get Stage() {
         return {
@@ -12,7 +14,9 @@ export default class Action {
     }
 
     type(stage) {
-        return this.baseType + (stage ? '.' + stage : '');
+        const {baseType} = this;
+        return (typeof baseType === 'function' ? baseType() : baseType) +
+            (stage ? '.' + stage : '');
     }
 
     typeStarted() {
@@ -82,18 +86,23 @@ export default class Action {
         return this.on(Action.Stage.ERROR, handler);
     }
     
+    static initial(valueOrFunc) {
+        return Object.assign(typeof valueOrFunc === 'function' ?
+            valueOrFunc : () => valueOrFunc, { [$$initial]: true });
+    }
+    
     static createReducer(...args) {
-        var actionHandlers = args, key, initial = { };
+        var actionHandlers = args, key;
         if (typeof args[0] !== "function") {
-            if (typeof args[0] == "string") {
+            if (typeof args[0] === "string") {
                 key = args[0];
-            } else {
-                key = args[0].key;
-                initial = args[0].initial || initial;
             }
             
             actionHandlers = args.slice(1);
         }
+        
+        var initial = actionHandlers.find((h) => h[$$initial]) || (() => ({}));
+        actionHandlers = actionHandlers.filter((h) => !h[$$initial]);
         
         return (state, action) => {
             let parentState;
@@ -103,7 +112,7 @@ export default class Action {
             }
             
             if (state === undefined) {
-                state = Object.assign({ }, initial);
+                state = initial();
             } else {
                 actionHandlers.forEach((actionHandler) => {
                     const newState = actionHandler(state, action);
