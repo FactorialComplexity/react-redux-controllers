@@ -16,7 +16,7 @@ function createSelector(controller, path, prop) {
       }
     } else {
       return function(state, nextProps) {
-        nextProp[prop] = path.reduce((prevState, key) =>
+        nextProps[prop] = path.reduce((prevState, key) =>
             prevState ? prevState[key] : undefined, state);
       }
     }
@@ -47,7 +47,7 @@ function createSelector(controller, path, prop) {
 function resolveAllDispatches(controller, prop, dispatches) {
   const assignTo = prop === '*' ? dispatches : { };
   if (prop !== '*') {
-    dispatches[m.prop] = assignTo;
+    dispatches[prop] = assignTo;
   }
 
   controller.getAllDispatchKeys().forEach((dispatchKey) => {

@@ -4,7 +4,7 @@ import hoistStatics from 'hoist-non-react-statics';
 import createMapper from './createMapper';
 import normalizeMappings from './normalizeMappings';
 
-const {shape, func, object} = PropTypes;
+const {shape, func} = PropTypes;
 export const storeShape = shape({
   subscribe: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,

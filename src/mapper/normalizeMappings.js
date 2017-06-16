@@ -1,5 +1,3 @@
-import warning from '../utils/warning';
-
 export default function normalizeMappings(mappings) {
   let normalized = [];
 
@@ -29,7 +27,7 @@ export default function normalizeMappings(mappings) {
   // Extract "dispatch*"
   normalized = normalized.map((m) =>
       (m.path.length > 0 && m.path[m.path.length-1] === 'dispatch*') ?
-          Object.assign(p, {
+          Object.assign(m, {
             path: m.path.slice(0, m.path.length-1),
             dispatchAll: true
           }) : m);
@@ -38,7 +36,7 @@ export default function normalizeMappings(mappings) {
   normalized = normalized.map((m) =>
       (m.path.length > 0 && (m.path[m.path.length-1] === 'select*' ||
           m.path[m.path.length-1] === '$') ?
-          Object.assign(p, {
+          Object.assign(m, {
             path: m.path.slice(0, m.path.length-1),
             onlySelect: true
           }) : m));

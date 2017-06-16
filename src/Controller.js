@@ -12,23 +12,25 @@ const __actions = Symbol('actions');
 const getAllClassMethods = (obj) => {
   let keys = [], topObject = obj;
   
+  const onlyOriginalMethods = (p, i, arr) =>
+    typeof topObject[p] === 'function' &&  //only the methods
+    p !== 'constructor' && //not the constructor
+    (i === 0 || p !== arr[i - 1]) && //not overriding in this prototype
+    keys.indexOf(p) === -1; //not overridden in a child
+  
   do {
     const l = Object.getOwnPropertyNames(obj)
       .sort()
-      .filter((p, i, arr) =>
-        typeof topObject[p] === 'function' &&  //only the methods
-        p !== 'constructor' && //not the constructor
-        (i == 0 || p !== arr[i - 1]) && //not overriding in this prototype
-        keys.indexOf(p) === -1 //not overridden in a child
-      );
+      .filter(onlyOriginalMethods);
     keys = keys.concat(l);
+    
+    //walk-up the prototype chain
+    obj = Object.getPrototypeOf(obj);
   }
   while (
-    //walk-up the prototype chain
-    (obj = Object.getPrototypeOf(obj)) &&
-    //not the the Object prototype methods (hasOwnProperty, etc...)
-    Object.getPrototypeOf(obj)
-  )
+    // not the the Object prototype methods (hasOwnProperty, etc...)
+    obj && Object.getPrototypeOf(obj)
+  );
 
   return keys;
 }
