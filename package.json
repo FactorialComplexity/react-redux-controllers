@@ -13,6 +13,9 @@
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
     "clean": "rimraf lib dist es",
     "lint": "eslint src test",
+    "test": "cross-env BABEL_ENV=commonjs jest",
+    "test:watch": "yarn test -- --watch",
+    "test:cov": "yarn test -- --coverage",
     "prepublish": "npm run clean && npm run build"
   },
   "author": "Vitaliy Ivanov",
@@ -64,6 +67,7 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "2.2.3",
     "eslint-plugin-react": "^6.8.0",
+    "jest": "^20.0.4",
     "react": "^15.4.0",
     "react-redux": "^5.0.4",
     "redux": "^3.6.0",
