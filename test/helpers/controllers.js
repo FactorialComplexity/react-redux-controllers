@@ -6,6 +6,12 @@ function id(state = []) {
   ), 0) + 1
 }
 
+export class NoOpController extends Controller {
+  reducer() {
+    return (state) => state || { }
+  }
+}
+
 export class ToDoController extends Controller {
   constructor() {
     super()

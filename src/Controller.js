@@ -61,7 +61,7 @@ export default class Controller {
   }
   
   get dispatch() {
-    return this[__store].dispatch;
+    return this[__store] ? this[__store].dispatch : undefined;
   }
   
   createAction(action, key) {
@@ -138,7 +138,7 @@ export default class Controller {
       this[__selectors] = this
           .getAllSelectKeys()
           .map((key) => ({
-            key: key.substr('$'.length + 1),
+            key: key.substr('$'.length),
             selector: this[key].bind(this)
           }));
       
@@ -203,7 +203,7 @@ export default class Controller {
    */
   getAllSelectKeys() {
     return getAllClassMethods(this)
-      .filter((key) => /^\$./.test(key) && typeof this[key] === 'function');
+      .filter((key) => /^\$[^\$]+/.test(key) && typeof this[key] === 'function');
   }
   
   /**
