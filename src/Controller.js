@@ -26,8 +26,7 @@ const getAllClassMethods = (obj) => {
     
     //walk-up the prototype chain
     obj = Object.getPrototypeOf(obj);
-  }
-  while (
+  } while (
     // not the the Object prototype methods (hasOwnProperty, etc...)
     obj && Object.getPrototypeOf(obj)
   );
@@ -179,7 +178,7 @@ export default class Controller {
   }
     
   reducer() {
-      // to be overriden in children
+    // to be overriden in children
   }
 
   /**
@@ -187,21 +186,20 @@ export default class Controller {
    * At this point all of the controllers are created and store is initialized.
    */
   afterCreateStore() {
-      // to be overriden in children
+    // to be overriden in children
   }
   
   /**
    * Returns array of all dispatch* function names defined in the Controller.
    */
   getAllDispatchKeys() {
-    return getAllClassMethods(this)
-        .filter((key) => /^dispatch./.test(key) &&
-            key !== 'dispatchAction' &&
-            typeof this[key] === 'function');
+    return getAllClassMethods(this).filter((key) => /^dispatch./.test(key) &&
+      key !== 'dispatchAction' && typeof this[key] === 'function');
   }
   
   /**
-   * Returns array all select* function names defined in the Controller.
+   * Returns array of all $* function names (selectors) defined in the
+   * Controller.
    */
   getAllSelectKeys() {
     return getAllClassMethods(this)
