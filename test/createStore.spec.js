@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import { createStore, combineReducers, Controller } from '../src'
-import { ToDoController } from './helpers/controllers.js'
+import { NoOpController } from './helpers/controllers.js'
 
 describe('createStore', () => {
   it('exposes getController() and vanilla createStore() API', () => {
-    const store = createStore(combineReducers({ todo: new ToDoController() }))
+    const store = createStore(combineReducers({ todo: new NoOpController() }))
     const methods = Object.keys(store)
 
     expect(methods.length).toBe(5)
@@ -16,8 +16,8 @@ describe('createStore', () => {
   })
   
   it('returns controller at specified path with getController()', () => {
-    const todo = new ToDoController()
-    const nestedTodo = new ToDoController()
+    const todo = new NoOpController()
+    const nestedTodo = new NoOpController()
     const reducers = combineReducers({
       todo,
       nested: combineReducers({
@@ -34,12 +34,12 @@ describe('createStore', () => {
   })
   
   it('calls afterCreateStore() for each mounted Controller with correct mountPath', () => {
-    const todo = Object.assign(new ToDoController(), {
+    const todo = Object.assign(new NoOpController(), {
       afterCreateStore: jest.fn(() => {
         expect(todo.mountPathString).toBe('todo')
       })
     })
-    const nestedTodo = Object.assign(new ToDoController(), {
+    const nestedTodo = Object.assign(new NoOpController(), {
       afterCreateStore:  jest.fn(() => {
         expect(nestedTodo.mountPathString).toBe('nested.todo')
       })
