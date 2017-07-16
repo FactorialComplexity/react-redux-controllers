@@ -47,11 +47,14 @@ export default function createStore(reducers, preloadedState, enhancer) {
   const controllersByPathString = reducers[__controllers] ?
       _flattenControllers(reducers[__controllers], []) :
       { };
-  
+      
   const controllersArray = Object.keys(controllersByPathString)
       .map(key => controllersByPathString[key]);
   
   function getController(path) {
+    if (Array.isArray(path)) {
+      path = path.join('.')
+    }
     return controllersByPathString[path];
   }
   
