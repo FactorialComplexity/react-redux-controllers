@@ -22,12 +22,12 @@ export default function combineReducers(reducers) {
     const key = reducerKeys[i];
     const reducer = reducers[key];
     
-    if (typeof reducer === "function") {
+    if (typeof reducer === 'function') {
       // Assume ready to use reducer function
       
       // Combine controllers
-      if (reducer.controllers) {
-        controllers[key] = reducer.controllers;
+      if (reducer[__controllers]) {
+        controllers[key] = reducer[__controllers];
       }
       
       resolvedReducers[key] = reducer;
@@ -42,10 +42,10 @@ export default function combineReducers(reducers) {
       // Let vanilla function to handle everything else
       resolvedReducers[key] = reducer;
     }
-    
-    return Object.assign(combineReducersVanilla(resolvedReducers), {
-      [__controllers]: Object.keys(controllers).length > 0 ?
-          controllers : undefined
-    });
   }
+  
+  return Object.assign(combineReducersVanilla(resolvedReducers), {
+    [__controllers]: Object.keys(controllers).length > 0 ?
+        controllers : undefined
+  });
 }
