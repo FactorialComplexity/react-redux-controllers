@@ -1,215 +1,224 @@
-import Action from "./utils/Action";
+import Action from "./Action";
 
-const _application = Symbol('application');
-const _mountPath = Symbol('mountPath');
-const _mountPathString = Symbol('mountPathString');
-const _actions = Symbol('actions');
+export const __store = Symbol('store');
+export const __mountPath = Symbol('mountPath');
+export const __mountPathString = Symbol('mountPathString');
+
+const __selectors = Symbol('selectors');
+const __selectorsByKey = Symbol('selectorsByKey');
+const __actions = Symbol('actions');
 
 
 const getAllClassMethods = (obj) => {
-    let keys = [], topObject = obj;
+  let keys = [], topObject = obj;
+  
+  const onlyOriginalMethods = (p, i, arr) =>
+    typeof topObject[p] === 'function' &&  //only the methods
+    p !== 'constructor' && //not the constructor
+    (i === 0 || p !== arr[i - 1]) && //not overriding in this prototype
+    keys.indexOf(p) === -1; //not overridden in a child
+  
+  do {
+    const l = Object.getOwnPropertyNames(obj)
+      .sort()
+      .filter(onlyOriginalMethods);
+    keys = keys.concat(l);
     
-    do {
-        const l = Object.getOwnPropertyNames(obj)
-            .sort()
-            .filter((p, i, arr) =>
-                typeof topObject[p] === 'function' &&  //only the methods
-                p !== 'constructor' &&           //not the constructor
-                (i == 0 || p !== arr[i - 1]) &&  //not overriding in this prototype
-                keys.indexOf(p) === -1           //not overridden in a child
-            );
-        keys = keys.concat(l);
-    }
-    while (
-        (obj = Object.getPrototypeOf(obj)) &&   //walk-up the prototype chain
-        Object.getPrototypeOf(obj)              //not the the Object prototype methods (hasOwnProperty, etc...)
-    )
+    //walk-up the prototype chain
+    obj = Object.getPrototypeOf(obj);
+  } while (
+    // not the the Object prototype methods (hasOwnProperty, etc...)
+    obj && Object.getPrototypeOf(obj)
+  );
 
-    return keys;
+  return keys;
 }
 
 export default class Controller {
-    constructor(application, mountPath) {
-        this[_application] = application;
-        this[_mountPath] = mountPath;
-        this[_mountPathString] = mountPath.join('.');
-        this[_actions] = { };
-    }
+  constructor() {
+    this[__actions] = { };
+  }
+  
+  static is(instance) {
+    // Enough to consider instance to be a Controller for most cases
+    return instance && typeof instance.reducer === 'function';
+  }
 
-    get application() {
-        return this[_application];
-    }
+  get store() {
+    return this[__store];
+  }
 
-    get mountPath() {
-        return this[_mountPath];
-    }
+  get mountPath() {
+    return this[__mountPath];
+  }
 
-    get mountPathString() {
-        return this[_mountPathString];
+  get mountPathString() {
+    return this[__mountPathString];
+  }
+  
+  get actions() {
+    return this[__actions];
+  }
+  
+  get dispatch() {
+    return this[__store] ? this[__store].dispatch : undefined;
+  }
+  
+  createAction(action, key) {
+    if (typeof action === "string") {
+      const baseType = () => (this[__mountPathString] + "/" + action);
+      this[__actions][action] = new Action(baseType);
+    } else {
+      this[__actions][key || action.type()] = action;
+    }
+  }
+  
+  dispatchAction(actionType, payload) {
+    const dotI = actionType.indexOf(".");
+    const actionBaseType = dotI === -1 ?
+        actionType : actionType.substring(0, dotI);
+    const actionStage = dotI === -1 ?
+        undefined : actionType.substring(dotI+1);
+    
+    this.store.dispatch(this.actions[actionBaseType].action(
+        actionStage, payload));
+  }
+  
+  createReducer(...args) {
+    return Action.createReducer(...args);
+  }
+    
+  /**
+   * Get the part of the stored state, managed by the controller.
+   *
+   * @param {Object} state The root of the state tree managed by the Redux
+   *    store.
+   */
+  $$(state) {
+    let innerState = state;
+    this[__mountPath].forEach((key) => {
+      innerState = innerState[key];
+    });
+    return innerState;
+  }
+    
+  /**
+   * Select the specified path of the stored state. If no path is specified
+   * (any falsey value or "*"), the full state of the tree is returned. All the
+   * required selector functions are called in both cases.
+   *
+   * @param {Object} state The root of the state tree managed by the Redux
+   *    store.
+   * 
+   * @param {(string|string[])=} path The path of the sub tree to obtain from
+   *    the state, relative to the controller mount path. It should either be a
+   *    string of dot separated keys or an array of strings. Falsey value as
+   *    well as not specifying this parameter makes the function to return the
+   *    full state managed by the controller.
+   */
+  $(state, path) {
+    let _state, _path;
+    if (arguments.length === 1) {
+      // either state or path
+      if (Array.isArray(arguments[0]) || typeof arguments[0] === 'string') {
+        _path = arguments[0];
+        _state = this.store.getState();
+      } else {
+        _state = arguments[0];
+      }
+    } else if (arguments.length > 1) {
+      _state = arguments[0];
+      _path = arguments[1];
     }
     
-    get actions() {
-        return this[_actions];
+    const all = !_path || (_path.length === 0) || _path === '*';
+    
+    if (!this[__selectors]) {
+      // cache selectors
+      this[__selectors] = this
+          .getAllSelectKeys()
+          .map((key) => ({
+            key: key.substr('$'.length),
+            selector: this[key].bind(this)
+          }));
+      
+      this[__selectorsByKey] = this[__selectors].reduce(
+          (res, s) => Object.assign(res, {[s.key]: s.selector}), {});
     }
     
-    createAction(action, key) {
-        if (typeof action === "string") {
-            this[_actions][action] = new Action(this[_mountPath] + "." + action);
+    const $$state = this.$$(_state);
+    if (all) {
+      const selectedState = Object.keys($$state)
+          .filter((key) => key[0] !== '_')
+          .reduce((res, key) => Object.assign(res, {
+            [key]: $$state[key]
+          }), {});
+
+      this[__selectors]
+          .reduce((res, s) => Object.assign(res, {
+            [s.key]: s.selector(_state)
+          }), selectedState);
+    
+      return selectedState;
+    } else {
+      if (typeof _path === 'string') {
+        _path = _path.split('.').filter((el) => el.length > 0);
+      }
+      
+      let selectedState = $$state;
+      for (let i=0; i<_path.length; ++i) {
+        if (i === 0 && this[__selectorsByKey][_path[i]]) {
+          selectedState = this[__selectorsByKey][_path[i]](_state);
         } else {
-            this[_actions][key || action.type()] = action;
+          selectedState = selectedState[_path[i]];
         }
+      }
+      return selectedState;
     }
+  }
     
-    dispatchAction(actionType, payload) {
-        const dotI = actionType.indexOf(".");
-        const actionBaseType = dotI === -1 ? actionType : actionType.substring(0, dotI);
-        const actionStage = dotI === -1 ? undefined : actionType.substring(dotI+1);
-        
-        this.application.store.dispatch(this.actions[actionBaseType].action(actionStage, payload));
-    }
-    
-    rootState(state) {
-        let innerState = state;
-        this[_mountPath].forEach((key) => {
-            innerState = innerState[key];
-        });
-        return innerState;
-    }
-    
-    $(state) {
-        let innerState = state;
-        this[_mountPath].forEach((key) => {
-            innerState = innerState[key];
-        });
-        return innerState;
-    }
+  reducer() {
+    // to be overriden in children
+  }
 
-    reducer() {
-        // to be overriden in children
-    }
-
-    beforeRun() {
-        // to be overriden in children
-    }
-
-    afterRehydrate() {
-        // to be overriden in children
-    }
-    
-    mapStateToProps(state, context, { pickProps, omitProps, overrideProps } = { }) {
-        const props = { };
-        
-        if (!overrideProps) {
-            overrideProps = { };
-        }
-        
-        getAllClassMethods(this).forEach((key) => {
-            if (!((!(pickProps && pickProps.indexOf(propName) === -1) ||
-                !(omitProps && omitProps.indexOf(propName) !== -1)) &&
-                !this[key].doNotMap &&
-                !this[key].mapAsDispatch))
-            {
-                return;
-            }
-            
-            var shouldMap = false, propName;
-            if (this[key].mapAsStateFunction) {
-                shouldMap = true;
-                propName = key;
-            } else if (/^get/.test(key)) {
-                shouldMap = true;
-                propName = key.substring(3, 4).toLowerCase() + key.substring(4);
-            } else if (/^is/.test(key)) {
-                shouldMap = true;
-                propName = key;
-            }
-            
-            if (shouldMap) {
-                if (overrideProps[propName]) {
-                    if (typeof overrideProps[propName] === "function") {
-                        props[propName] = overrideProps[propName](this, state, context,
-                            { pickProps, omitProps, overrideProps });
-                    } else {
-                        props[propName] = overrideProps[propName].$func ? overrideProps[propName].$func :
-                            overrideProps[propName];
-                    }
-                } else {
-                    if (this[key].mapAsStateFunction) {
-                        props[propName] = (...args) => this[key](...args, state, context);
-                    } else {
-                        props[propName] = this[key](state, context);
-                    }
-                }
-            }
-        });
-        
-        return props;
-    }
-    
-    mapDispatchToProps(dispatch, context, { pickProps, omitProps, overrideProps } = { }) {
-        const props = { };
-        const defaultOmitFunctions = [
-            "rootState",
-            "$",
-            "reducer",
-            "beforeRun",
-            "afterRehydrate",
-            "mapStateToProps",
-            "mapDispatchToProps",
-            "doNotMap",
-            "mapAsStateFunction",
-            "mapAsDispatch"
-        ];
-        
-        if (!overrideProps) {
-            overrideProps = { };
-        }
-        
-        getAllClassMethods(this).forEach((key) => {
-            if (((!/^(get|_)/.test(key) && !/^(is|_)/.test(key)) || this[key].mapAsDispatch) &&
-                defaultOmitFunctions.indexOf(key) === -1 &&
-                !this[key].doNotMap &&
-                !this[key].mapAsStateFunction)
-            {
-                if (overrideProps[key]) {
-                    if (typeof overrideProps[key] === "function") {
-                        props[key] = overrideProps[key](this, dispatch, context,
-                            { pickProps, omitProps, overrideProps });
-                    } else {
-                        props[key] = overrideProps[key].$func ? overrideProps[key].$func :
-                            overrideProps[key];
-                    }
-                } else {
-                    props[key] = (...args) => this[key](...args.concat([dispatch, context]));
-                }
-            }
-        });
-        
-        return props;
-    }
-    
-    doNotMap(...functions) {
-        functions.forEach((func) => {
-            func.doNotMap = true;
-        });
-    }
-    
-    mapAsStateFunction(...functions) {
-        functions.forEach((func) => {
-            func.mapAsStateFunction = true;
-        });
-    }
-    
-    mapAsDispatch(...functions) {
-        functions.forEach((func) => {
-            func.mapAsDispatch = true;
-        });
-    }
-
-    static named(name) {
-        return {
-            cls: this,
-            name: name
-        };
-    }
+  /**
+   * Executed for all controllers after createStore() was called.
+   * At this point all of the controllers are created and store is initialized.
+   */
+  afterCreateStore() {
+    // to be overriden in children
+  }
+  
+  /**
+   * Returns array of all dispatch* function names defined in the Controller.
+   */
+  getAllDispatchKeys() {
+    return getAllClassMethods(this).filter((key) => /^dispatch./.test(key) &&
+      key !== 'dispatchAction' && typeof this[key] === 'function');
+  }
+  
+  /**
+   * Returns array of all $* function names (selectors) defined in the
+   * Controller.
+   */
+  getAllSelectKeys() {
+    return getAllClassMethods(this)
+      .filter((key) => /^\$[^\$]+/.test(key) && typeof this[key] === 'function');
+  }
+  
+  /**
+   * This method is used by Container for optimizations. It checks if the state
+   * was changed comparing to an old state, so selectors need to be reevaluated.
+   * By default it compares state objects by reference (`===`). This should
+   * be fine if your state is immutable, which is highly recommended. Otherwise
+   * you are responsible for overriding this check according to your needs or
+   * just return false if you want reevaluate all selectors each time the state
+   * tree is updated.
+   *
+   * Its purpose is basically the same as of `options.areStatesEqual` argument
+   * to `connect` function from `react-redux` library.
+   */
+  areStatesEqual($$prev, $$next) {
+    return $$prev === $$next;
+  }
 }
