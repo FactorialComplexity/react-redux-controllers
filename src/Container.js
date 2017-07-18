@@ -14,11 +14,9 @@ export default function Container(WrappedComponent, ...mappings) {
         return nextOwnProps;
       }
       
-      const nextResult = Object.assign({ },
-          nextOwnProps,
-          {mapper: undefined}, // Do not pass the mapper down
-          mapper.dispatches);
-          
+      const nextResult = Object.assign({ }, nextOwnProps, mapper.dispatches);
+      delete nextResult.mapper // Do not pass the mapper down
+        
       mapper.selectors.forEach((sel) => sel(state, nextResult));
       
       if (!shallowEqual(result, nextResult))
