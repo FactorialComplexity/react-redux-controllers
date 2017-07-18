@@ -45,8 +45,12 @@ export default function combineReducers(reducers) {
     }
   }
   
-  return Object.assign(combineReducersVanilla(resolvedReducers), {
-    [__controllers]: Object.keys(controllers).length > 0 ?
-        controllers : undefined
-  });
+  const combinedReducer = combineReducersVanilla(resolvedReducers)
+  if (Object.keys(controllers).length > 0) {
+    Object.defineProperty(combinedReducer, __controllers, {
+      value: controllers
+    })
+  }
+
+  return combinedReducer;
 }
