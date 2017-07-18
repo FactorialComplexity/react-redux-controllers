@@ -1,4 +1,6 @@
-const $$initial = Symbol('initial');
+import _Symbol from './utils/_Symbol'
+
+const $$initial = _Symbol('initial');
 
 export default class Action {
   static get Stage() {
@@ -87,8 +89,13 @@ export default class Action {
   }
   
   static initial(valueOrFunc) {
-    return Object.assign(typeof valueOrFunc === 'function' ?
-      valueOrFunc : () => valueOrFunc, { [$$initial]: true });
+    const func = typeof valueOrFunc === 'function' ? valueOrFunc : () => valueOrFunc
+
+    Object.defineProperty(combinedReducer, $$initial, {
+      value: true
+    })
+
+    return func
   }
   
   static createReducer(...args) {
