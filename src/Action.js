@@ -91,7 +91,7 @@ export default class Action {
   static initial(valueOrFunc) {
     const func = typeof valueOrFunc === 'function' ? valueOrFunc : () => valueOrFunc
 
-    Object.defineProperty(combinedReducer, $$initial, {
+    Object.defineProperty(func, $$initial, {
       value: true
     })
 
