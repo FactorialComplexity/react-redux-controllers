@@ -1,12 +1,13 @@
 import Action from "./Action";
+import _Symbol from './utils/_Symbol'
 
-export const __store = Symbol('store');
-export const __mountPath = Symbol('mountPath');
-export const __mountPathString = Symbol('mountPathString');
+export const __store = _Symbol('store');
+export const __mountPath = _Symbol('mountPath');
+export const __mountPathString = _Symbol('mountPathString');
 
-const __selectors = Symbol('selectors');
-const __selectorsByKey = Symbol('selectorsByKey');
-const __actions = Symbol('actions');
+const __selectors = _Symbol('selectors');
+const __selectorsByKey = _Symbol('selectorsByKey');
+const __actions = _Symbol('actions');
 
 
 const getAllClassMethods = (obj) => {

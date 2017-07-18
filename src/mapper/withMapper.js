@@ -34,8 +34,8 @@ export default function withMapper(WrappedComponent, ...mappings) {
         prevStore = store;
         prevMapper = mapper;
       }
-            
-      return React.createElement(WrappedComponent, {...this.props, mapper});
+      
+      return <WrappedComponent {...this.props} mapper={mapper} />;
     }
   }
   

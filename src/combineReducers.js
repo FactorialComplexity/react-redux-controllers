@@ -1,7 +1,8 @@
 import { combineReducers as combineReducersVanilla } from 'redux';
 import Controller from './Controller';
+import _Symbol from './utils/_Symbol'
 
-export const __controllers = Symbol('controllers');
+export const __controllers = _Symbol('controllers');
 
 /**
  * Wrapper around vanilla `combineReducers()` from `redux` package.
