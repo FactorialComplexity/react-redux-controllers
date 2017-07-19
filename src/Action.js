@@ -35,21 +35,16 @@ export default class Action {
 
   action() {
     var stage = arguments[0],
-      payload = arguments[1],
-      error = arguments[2];
+      payload = arguments[1];
 
     if (arguments.length === 1) {
       stage = undefined;
       payload = arguments[0];
     }
 
-    return {
-      type: this.type(stage),
-      error,
-      payload
-    };
+    return { type: this.type(stage), payload };
   }
-
+  
   started(payload) {
     return this.action(Action.Stage.STARTED, payload);
   }
@@ -57,9 +52,9 @@ export default class Action {
   success(payload) {
     return this.action(Action.Stage.SUCCESS, payload);
   }
-
+  
   error(payload) {
-    return this.action(Action.Stage.ERROR, payload, true);
+    return { type: this.typeError(), payload, error: true };
   }
 
   on() {
@@ -91,7 +86,7 @@ export default class Action {
   static initial(valueOrFunc) {
     const func = typeof valueOrFunc === 'function' ? valueOrFunc : () => valueOrFunc
 
-    Object.defineProperty(combinedReducer, $$initial, {
+    Object.defineProperty(func, $$initial, {
       value: true
     })
 

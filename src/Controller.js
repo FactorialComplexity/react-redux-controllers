@@ -88,7 +88,7 @@ export default class Controller {
   createReducer(...args) {
     return Action.createReducer(...args);
   }
-    
+  
   /**
    * Get the part of the stored state, managed by the controller.
    *
