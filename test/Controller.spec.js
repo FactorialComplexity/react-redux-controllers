@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { createStore, combineReducers, Controller, Action } from '../src'
-import { NoOpController, id } from './helpers/controllers.js'
+import { NoOpController } from './helpers/controllers.js'
 
 describe('Controller', () => {
   it('exposes valid public API: mount path, store and Controller.is', () => {
@@ -147,7 +147,6 @@ describe('Controller', () => {
           add.on((state = [], text) => [
             ...state,
             {
-              id: id(state),
               text
             }
           ])
