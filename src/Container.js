@@ -8,16 +8,16 @@ export default function Container(WrappedComponent, ...mappings) {
     let result = {};
     
     return (state, nextOwnProps) => {
-      const {mapper} = nextOwnProps;
+      const { mapper } = nextOwnProps;
       if (!mapper) {
         warning(`Property 'mapper' expected but not found.`);
-        return nextOwnProps;
+        return nextOwnProps
       }
       
-      const nextResult = Object.assign({ }, nextOwnProps, mapper.dispatches);
+      let nextResult = Object.assign({ }, nextOwnProps);
       delete nextResult.mapper // Do not pass the mapper down
-        
-      mapper.selectors.forEach((sel) => sel(state, nextResult));
+      
+      nextResult = mapper(state, nextResult)
       
       if (!shallowEqual(result, nextResult))
         result = nextResult;

@@ -1,8 +1,9 @@
-import warning from '../utils/warning';
+import warning from '../utils/warning'
+import { toLowerCaseFirst, toUpperCaseFirst } from '../utils/toCaseFirst'
 
 function strippedDispatchKey(dispatchKey) {
   let stripped = dispatchKey.replace(/^dispatch/, '');
-  stripped = stripped[0].toLowerCase() + stripped.substr(1);
+  stripped = toLowerCaseFirst(stripped);
   return stripped;
 }
 
@@ -24,6 +25,7 @@ function createSelector(controller, path, prop) {
     let prevState, mappedState;
     
     return function(state, nextProps) {
+      
       const $$state = controller.$$(state);
       
       // Optimization: do not do any mapping if nothing has changed in 
@@ -36,9 +38,9 @@ function createSelector(controller, path, prop) {
       mappedState = controller.$(state, path);
       
       if (prop === '*') {
-        Object.assign(nextProps, mappedState);
+        Object.assign(nextProps, mappedState)
       } else {
-        nextProps[prop] = mappedState;
+        nextProps[prop] = mappedState
       }
     }
   }
@@ -54,6 +56,21 @@ function resolveAllDispatches(controller, prop, dispatches) {
     assignTo[strippedDispatchKey(dispatchKey)] =
         controller[dispatchKey].bind(controller);
   });
+}
+
+/**
+  Checks `propName` for being a dispatch name. Returns the actual name of the `controller` key
+  if it is, otherwise returns undefined.
+*/
+function tryPropertyAsDispatch(controller, propName) {
+  if (/^dispatch./.test(propName)) {
+    return propName
+  }
+  
+  propName = `dispatch${toUpperCaseFirst(propName)}`
+  if (typeof controller[propName] === 'function') {
+    return propName
+  }
 }
 
 export default function createMapper(getController, mappings, contextString) {
@@ -92,27 +109,30 @@ export default function createMapper(getController, mappings, contextString) {
         if (controller) {
           if (j === m.path.length-1) {
             resolveAllDispatches(controller, m.prop, dispatches);
-          } else if (/^dispatch./.test(m.path[j+1])) {
-            // Mapping a dispatch function
-            const dispatch = controller[m.path[j+1]];
+          } else {
+            const dispatchKey = tryPropertyAsDispatch(controller, m.path[j+1])
+            if (dispatchKey) {
+              // Mapping a dispatch function
+              const dispatch = controller[dispatchKey]
             
-            if (typeof dispatch !== 'function') {
-              warning(
-                `Function not found at path ${m.path.join('.')}`
-              );
+              if (typeof dispatch !== 'function') {
+                warning(
+                  `Function not found at path ${m.path.join('.')}`
+                );
+                break;
+              }
+            
+              if ((j+1) !== (m.path.length-1)) {
+                warning(
+                  `Mapping dispatch function sub key is not supported. ` +
+                  `Path: ${m.path.join('.')}`
+                );
+                break;
+              }
+            
+              dispatches[m.prop] = dispatch;
               break;
             }
-            
-            if ((j+1) !== (m.path.length-1)) {
-              warning(
-                `Mapping dispatch function sub key is not supported. ` +
-                `Path: ${m.path.join('.')}`
-              );
-              break;
-            }
-            
-            dispatches[m.prop] = dispatch;
-            break;
           }
           
           selectors.push(createSelector(controller, m.path.slice(j+1), m.prop));
@@ -126,5 +146,22 @@ export default function createMapper(getController, mappings, contextString) {
     }
   }
   
-  return {dispatches, selectors};
+  return (state, props) => {
+    const nextProps = Object.assign({ }, props, dispatches)
+    selectors.forEach((sel) => sel(state, nextProps))
+    
+    const dispatchKeys = Object.keys(dispatches)
+    for (let i=0; i<dispatchKeys.length; ++i) {
+      const key = dispatchKeys[i]
+      const value = dispatches[key]
+      
+      if (typeof value === 'function') {
+        nextProps[key] = value
+      } else {
+        nextProps[key] = Object.assign(nextProps[key] || { }, value)
+      }
+    }
+    
+    return nextProps
+  }
 }
