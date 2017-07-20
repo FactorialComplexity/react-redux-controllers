@@ -1,7 +1,7 @@
-import { connectAdvanced } from 'react-redux';
-import shallowEqual from './utils/shallowEqual';
-import withMapper from './mapper/withMapper';
-import warning from './utils/warning';
+import { connectAdvanced } from 'react-redux'
+import shallowEqual from './utils/shallowEqual'
+import withMapper from './mapper/withMapper'
+import warning from './utils/warning'
 
 /**
  * Connects a React component to a Redux store. Additionally to regular `connect()` method
@@ -32,38 +32,37 @@ import warning from './utils/warning';
  * | `"path.$"` | Same as `"path.select*"` | |
  * | `{ "path.select*": "*" }` | Same as `"path.select*"` | |
  * | `{ "path.select*": "keys" }` | Only map state managed by the controller to props (no dispatches). | `path.key1` to `props.keys.key1` <br> `path.key2` to `props.keys.key2` ... |
- * 
- * 
+ *
+ *
  *
  * @param {React.Component} WrappedComponent Component to connect.
  * @param {string|Object.<string, string>} mappings Any amount of mappings that should be applied
  *   when connecting Redux store to the component.
  *
  */
-function Container(WrappedComponent, ...mappings) {
-  function factory(dispatch) {
-    let result = {};
-    
+function Container (WrappedComponent, ...mappings) {
+  function factory (dispatch) {
+    let result = {}
+
     return (state, nextOwnProps) => {
-      const { mapper } = nextOwnProps;
+      const { mapper } = nextOwnProps
       if (!mapper) {
-        warning(`Property 'mapper' expected but not found.`);
+        warning(`Property 'mapper' expected but not found.`)
         return nextOwnProps
       }
-      
-      let nextResult = Object.assign({ }, nextOwnProps);
+
+      let nextResult = Object.assign({ }, nextOwnProps)
       delete nextResult.mapper // Do not pass the mapper down
-      
+
       nextResult = mapper(state, nextResult)
-      
-      if (!shallowEqual(result, nextResult))
-        result = nextResult;
-      
-      return result;
+
+      if (!shallowEqual(result, nextResult)) { result = nextResult }
+
+      return result
     }
   }
-  
-  return withMapper(connectAdvanced(factory)(WrappedComponent), ...mappings);
+
+  return withMapper(connectAdvanced(factory)(WrappedComponent), ...mappings)
 }
 
 export default Container

@@ -1,8 +1,8 @@
-import { combineReducers as combineReducersVanilla } from 'redux';
-import Controller from './Controller';
+import { combineReducers as combineReducersVanilla } from 'redux'
+import Controller from './Controller'
 import _Symbol from './utils/_Symbol'
 
-export const __controllers = _Symbol('controllers');
+export const __controllers = _Symbol('controllers')
 
 /**
  * Wrapper around vanilla `combineReducers()` from `redux` package.
@@ -12,39 +12,36 @@ export const __controllers = _Symbol('controllers');
  * key of the returned function. __controllers is passed up the chain and
  * is intended to be used by the `createStore()`.
  */
-function combineReducers(reducers) {
-  
+function combineReducers (reducers) {
   // Preprocess reducers
-  const reducerKeys = Object.keys(reducers);
-  const resolvedReducers = { };
-  const controllers = { };
-  
+  const reducerKeys = Object.keys(reducers)
+  const resolvedReducers = { }
+  const controllers = { }
+
   for (let i = 0; i < reducerKeys.length; ++i) {
-    const key = reducerKeys[i];
-    const reducer = reducers[key];
-    
+    const key = reducerKeys[i]
+    const reducer = reducers[key]
+
     if (typeof reducer === 'function') {
       // Assume ready to use reducer function
-      
+
       // Combine controllers
       if (reducer[__controllers]) {
-        controllers[key] = reducer[__controllers];
+        controllers[key] = reducer[__controllers]
       }
-      
-      resolvedReducers[key] = reducer;
-    
+
+      resolvedReducers[key] = reducer
     } else if (Controller.is(reducer)) {
       // Assume this is a Controller
-      const controller = reducer;
-      controllers[key] = controller;
-      resolvedReducers[key] = controller.reducer();
-      
+      const controller = reducer
+      controllers[key] = controller
+      resolvedReducers[key] = controller.reducer()
     } else {
       // Let vanilla function to handle everything else
-      resolvedReducers[key] = reducer;
+      resolvedReducers[key] = reducer
     }
   }
-  
+
   const combinedReducer = combineReducersVanilla(resolvedReducers)
   if (Object.keys(controllers).length > 0) {
     Object.defineProperty(combinedReducer, __controllers, {
@@ -52,7 +49,7 @@ function combineReducers(reducers) {
     })
   }
 
-  return combinedReducer;
+  return combinedReducer
 }
 
 export default combineReducers

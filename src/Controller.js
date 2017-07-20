@@ -1,38 +1,38 @@
-import Action from "./Action";
+import Action from './Action'
 import _Symbol from './utils/_Symbol'
 
-export const __store = _Symbol('store');
-export const __mountPath = _Symbol('mountPath');
-export const __mountPathString = _Symbol('mountPathString');
+export const __store = _Symbol('store')
+export const __mountPath = _Symbol('mountPath')
+export const __mountPathString = _Symbol('mountPathString')
 
-const __selectors = _Symbol('selectors');
-const __selectorsByKey = _Symbol('selectorsByKey');
-const __actions = _Symbol('actions');
-
+const __selectors = _Symbol('selectors')
+const __selectorsByKey = _Symbol('selectorsByKey')
+const __actions = _Symbol('actions')
 
 const getAllClassMethods = (obj) => {
-  let keys = [], topObject = obj;
-  
+  let keys = []
+  let topObject = obj
+
   const onlyOriginalMethods = (p, i, arr) =>
-    typeof topObject[p] === 'function' &&  //only the methods
-    p !== 'constructor' && //not the constructor
-    (i === 0 || p !== arr[i - 1]) && //not overriding in this prototype
-    keys.indexOf(p) === -1; //not overridden in a child
-  
+    typeof topObject[p] === 'function' &&  // only the methods
+    p !== 'constructor' && // not the constructor
+    (i === 0 || p !== arr[i - 1]) && // not overriding in this prototype
+    keys.indexOf(p) === -1 // not overridden in a child
+
   do {
     const l = Object.getOwnPropertyNames(obj)
       .sort()
-      .filter(onlyOriginalMethods);
-    keys = keys.concat(l);
-    
-    //walk-up the prototype chain
-    obj = Object.getPrototypeOf(obj);
+      .filter(onlyOriginalMethods)
+    keys = keys.concat(l)
+
+    // walk-up the prototype chain
+    obj = Object.getPrototypeOf(obj)
   } while (
     // not the the Object prototype methods (hasOwnProperty, etc...)
     obj && Object.getPrototypeOf(obj)
-  );
+  )
 
-  return keys;
+  return keys
 }
 
 /**
@@ -44,7 +44,7 @@ const getAllClassMethods = (obj) => {
  *  - *Providing access* and if necessary *transforming* the data in the managed part of the
  *    **state**.
  *
- * Controller is intended to be subclassed. It won't work as is, because it doesn't provide 
+ * Controller is intended to be subclassed. It won't work as is, because it doesn't provide
  * a reducer function ([reducer()]{@link Controller#reducer} returns `undefined`).
  *
  * The only function mandatory for overriding is:
@@ -61,7 +61,7 @@ const getAllClassMethods = (obj) => {
  *    **not need** to override this method.
  *
  * In order to utilize the full power of the framework, subclasses define two types of functions:
- * 
+ *
  *  - **Selectors** transform the part of the Controller-managed state into different structure.
  *    Any method that starts with `$` symbol is considered to be a selector.
  *  - **Dispatches** are special functions that are expected to dispatch some actions either
@@ -79,7 +79,7 @@ const getAllClassMethods = (obj) => {
  *   dispatchAdd(text) {
  *     this.dispatchAction('add', text)
  *   }
- * 
+ *
  *   // Selector function. Will be used to collect data for `props.text` in Container
  *   $texts(state) {
  *     return this.$$(state)._items.map((item) => item.text)
@@ -101,10 +101,10 @@ class Controller {
    * And of course to pass and store any external dependencies and parameters Controller needs
    * to function.
    */
-  constructor() {
-    this[__actions] = { };
+  constructor () {
+    this[__actions] = { }
   }
-  
+
   /**
    * Checks if provided value *looks like* an instance of the Controller class. It does pretty
    * minimal check and should not be relied to actually detect the fact of being Controller's
@@ -112,25 +112,25 @@ class Controller {
    *
    * @param instance Value to be checked.
    */
-  static is(value) {
+  static is (value) {
     // Enough to consider instance to be a Controller for most cases
-    return value && typeof value.reducer === 'function';
+    return value && typeof value.reducer === 'function'
   }
-  
+
   /**
    * Redux store object this controller is mounted to.
    * @type {Store}
    */
-  get store() {
-    return this[__store];
+  get store () {
+    return this[__store]
   }
 
   /**
    * Path under which this controller is mounted as the array of keys.
    * @type {string[]}
    */
-  get mountPath() {
-    return this[__mountPath];
+  get mountPath () {
+    return this[__mountPath]
   }
 
   /**
@@ -138,30 +138,30 @@ class Controller {
    * with `.` (dot) symbol.
    * @type {string}
    */
-  get mountPathString() {
-    return this[__mountPathString];
+  get mountPathString () {
+    return this[__mountPathString]
   }
-  
+
   /**
    * Array of [Actions]{@link Action} previously created by
    * [Controller.createAction()]{@link Controller#createAction} calls.
    * @type {Object.<string, Action>}
    */
-  get actions() {
-    return this[__actions];
+  get actions () {
+    return this[__actions]
   }
-  
+
   /**
    * Redux store `dispatch()` function.
    * @type {function}
    */
-  get dispatch() {
-    return this[__store] ? this[__store].dispatch : undefined;
+  get dispatch () {
+    return this[__store] ? this[__store].dispatch : undefined
   }
-  
+
   /**
    * Create new {@link Action} and attach it to [Controller.actions]{@link Controller#actions}.
-   * Intended to be used from inside the Controller. If provided a string key the {@link Action} 
+   * Intended to be used from inside the Controller. If provided a string key the {@link Action}
    * will be created with type equal to `${Controller.mountPathString}/${action}`.
    *
    * @param {string|Action} action String to be used as action key in {@link Controller#actions}
@@ -180,20 +180,20 @@ class Controller {
    * // Later on these actions are available in this.actions:
    * const { update, load } = this.actions
    */
-  createAction(action, key) {
-    if (typeof action === "string") {
-      const baseType = () => (this[__mountPathString] + "/" + action);
-      this[__actions][action] = new Action(baseType);
+  createAction (action, key) {
+    if (typeof action === 'string') {
+      const baseType = () => (this[__mountPathString] + '/' + action)
+      this[__actions][action] = new Action(baseType)
     } else {
-      this[__actions][key || action.type()] = action;
+      this[__actions][key || action.type()] = action
     }
   }
-  
+
   /**
    * Dispatch the {@link Action} into the store by key and optionally a stage with the provided
    * payload. This is a shortcut method provided for convenience. Is it intended to be used from
    * inside the Controller.
-   * 
+   *
    * @param {string} actionType Action key string with optional stage (see {@link Action}).
    * @param payload Any object that should be sent as action payload.
    *
@@ -204,15 +204,15 @@ class Controller {
    * // Dispatch action with key "update" and stage "started"
    * dispatchAction("update.started", { objectId: "1" })
    */
-  dispatchAction(actionType, payload) {
+  dispatchAction (actionType, payload) {
     // TODO: error processing if action was not found.
-    
-    const dotI = actionType.indexOf(".");
-    const actionBaseType = dotI === -1 ?
-        actionType : actionType.substring(0, dotI);
-    const actionStage = dotI === -1 ?
-        undefined : actionType.substring(dotI+1);
-    
+
+    const dotI = actionType.indexOf('.')
+    const actionBaseType = dotI === -1
+        ? actionType : actionType.substring(0, dotI)
+    const actionStage = dotI === -1
+        ? undefined : actionType.substring(dotI + 1)
+
     if (actionStage === 'error') {
       this.store.dispatch(this.actions[actionBaseType].error(payload))
     } else {
@@ -220,15 +220,15 @@ class Controller {
           actionStage, payload))
     }
   }
-  
+
   /**
    * This a convenience function, which simply calls
    * [Action.createReducer()]{@link Action#createReducer} passing through all of the arguments.
    */
-  createReducer(...args) {
-    return Action.createReducer(...args);
+  createReducer (...args) {
+    return Action.createReducer(...args)
   }
-  
+
   /**
    * Get the raw part of the stored state, managed by the controller. No selectors
    * will be called and no dispatches to be added to the result.
@@ -236,14 +236,14 @@ class Controller {
    * @param {Object} state The root of the state tree managed by the Redux
    *    store.
    */
-  $$(state) {
-    let innerState = state;
+  $$ (state) {
+    let innerState = state
     this[__mountPath].forEach((key) => {
-      innerState = innerState[key];
-    });
-    return innerState;
+      innerState = innerState[key]
+    })
+    return innerState
   }
-    
+
   /**
    * Select the value at specified path of the stored state. If no path is specified
    * (any falsey value or `"*"`), the full state of the tree is returned. All the
@@ -252,7 +252,7 @@ class Controller {
    *
    * @param {Object} state The root of the state tree managed by the Redux
    *    store.
-   * 
+   *
    * @param {(string|string[])=} path The path of the sub tree to obtain from
    *    the state, relative to the controller mount path. It should either be a
    *    string of dot separated keys or an array of strings. Falsey value as
@@ -262,23 +262,23 @@ class Controller {
    * @returns Value selected from the specified path or `undefined` if nothing found
    *    at the specified path.
    */
-  $(state, path) {
-    let _state, _path;
+  $ (state, path) {
+    let _state, _path
     if (arguments.length === 1) {
       // either state or path
       if (Array.isArray(arguments[0]) || typeof arguments[0] === 'string') {
-        _path = arguments[0];
-        _state = this.store.getState();
+        _path = arguments[0]
+        _state = this.store.getState()
       } else {
-        _state = arguments[0];
+        _state = arguments[0]
       }
     } else if (arguments.length > 1) {
-      _state = arguments[0];
-      _path = arguments[1];
+      _state = arguments[0]
+      _path = arguments[1]
     }
-    
-    const all = !_path || (_path.length === 0) || _path === '*';
-    
+
+    const all = !_path || (_path.length === 0) || _path === '*'
+
     if (!this[__selectors]) {
       // cache selectors
       this[__selectors] = this
@@ -286,47 +286,47 @@ class Controller {
           .map((key) => ({
             key: key.substr('$'.length),
             selector: this[key].bind(this)
-          }));
-      
+          }))
+
       this[__selectorsByKey] = this[__selectors].reduce(
-          (res, s) => Object.assign(res, {[s.key]: s.selector}), {});
+          (res, s) => Object.assign(res, {[s.key]: s.selector}), {})
     }
-    
-    const $$state = this.$$(_state);
+
+    const $$state = this.$$(_state)
     if (all) {
       const selectedState = Object.keys($$state)
           .filter((key) => key[0] !== '_')
           .reduce((res, key) => Object.assign(res, {
             [key]: $$state[key]
-          }), {});
+          }), {})
 
       this[__selectors]
           .reduce((res, s) => Object.assign(res, {
             [s.key]: s.selector(_state)
-          }), selectedState);
-    
-      return selectedState;
+          }), selectedState)
+
+      return selectedState
     } else {
       if (typeof _path === 'string') {
-        _path = _path.split('.').filter((el) => el.length > 0);
+        _path = _path.split('.').filter((el) => el.length > 0)
       }
-      
-      let selectedState = $$state;
-      for (let i=0; i<_path.length; ++i) {
+
+      let selectedState = $$state
+      for (let i = 0; i < _path.length; ++i) {
         if (i === 0 && this[__selectorsByKey][_path[i]]) {
-          selectedState = this[__selectorsByKey][_path[i]](_state);
+          selectedState = this[__selectorsByKey][_path[i]](_state)
         } else {
-          selectedState = selectedState[_path[i]];
+          selectedState = selectedState[_path[i]]
         }
       }
-      return selectedState;
+      return selectedState
     }
   }
-    
+
   /**
    * Called when Controller reducer is needed for the first time. Override this method and return
    * the reducer function. Reducer function is executed on the part state where Controller
-   * was mounted. It is recommended to utilize {@link Action} and convenience functions 
+   * was mounted. It is recommended to utilize {@link Action} and convenience functions
    * [Controller.createReducer]{@link Controller#createReducer},
    * [Controller.createAction]{@link Controller#createAction} and
    * [Controller.dispatchAction]{@link Controller#dispatchAction}, but is not mandatory. A regular
@@ -337,14 +337,14 @@ class Controller {
    * @example
    * reducer() {
    *   const { update } = this.actions
-   *   
+   *
    *   return this.createReducer(
    *     update.onStarted((state, payload) => ({...state, isUpdating: true })),
    *     update.onSuccess((state, items) => ({...state, items, isUpdating: false }))
    *   )
    * }
    */
-  reducer() {
+  reducer () {
     // to be overriden in children
   }
 
@@ -352,30 +352,30 @@ class Controller {
    * Executed for all controllers after createStore() was called.
    * At this point all of the controllers are created and store is initialized.
    */
-  afterCreateStore() {
+  afterCreateStore () {
     // to be overriden in children
   }
-  
+
   /**
    * Returns array of all dispatch* function names defined in the Controller.
    *
    * @private
    */
-  getAllDispatchKeys() {
+  getAllDispatchKeys () {
     return getAllClassMethods(this).filter((key) => /^dispatch./.test(key) &&
-      key !== 'dispatchAction' && typeof this[key] === 'function');
+      key !== 'dispatchAction' && typeof this[key] === 'function')
   }
-  
+
   /**
    * Returns array of all $* function names (selectors) defined in the Controller.
    *
    * @private
    */
-  getAllSelectKeys() {
+  getAllSelectKeys () {
     return getAllClassMethods(this)
-      .filter((key) => /^\$[^\$]+/.test(key) && typeof this[key] === 'function');
+      .filter((key) => /^\$[^$]+/.test(key) && typeof this[key] === 'function')
   }
-  
+
   /**
    * This method is used by {#link Container} for optimizations. It checks if the state
    * was changed comparing to an old state, so selectors need to be reevaluated.
@@ -391,8 +391,8 @@ class Controller {
    * @param $$prev Previous value of part of the state managed by the Controller.
    * @param $$next Next value part of the state managed by the Controller to be compared.
    */
-  areStatesEqual($$prev, $$next) {
-    return $$prev === $$next;
+  areStatesEqual ($$prev, $$next) {
+    return $$prev === $$next
   }
 }
 

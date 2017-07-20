@@ -1,7 +1,7 @@
 import { Controller } from '../../src'
 
 export class NoOpController extends Controller {
-  reducer() {
+  reducer () {
     return (state) => state || { }
   }
 }
