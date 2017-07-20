@@ -64,9 +64,9 @@ export default class Action {
       handler = arguments[0];
     }
     
-    return (state, action, fullState) => {
+    return (state, action) => {
       if (action.type === this.type(stage)) {
-        return handler(state, action.payload, fullState);
+        return handler(state, action.payload);
       }
     };
   }
