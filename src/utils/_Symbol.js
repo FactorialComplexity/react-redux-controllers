@@ -1,2 +1,2 @@
-/* Simple workaround for platforms lacking symbols support  */
-export default Symbol || ((name) => `_$${name}`)
+/* Simple workaround for environments lacking symbols support  */
+export default (label) => (Symbol ? Symbol(label) : `__$Symbol(${label})`)
