@@ -81,8 +81,12 @@ export default class Controller {
     const actionStage = dotI === -1 ?
         undefined : actionType.substring(dotI+1);
     
-    this.store.dispatch(this.actions[actionBaseType].action(
-        actionStage, payload));
+    if (actionStage === 'error') {
+      this.store.dispatch(this.actions[actionBaseType].error(payload))
+    } else {
+      this.store.dispatch(this.actions[actionBaseType].action(
+          actionStage, payload))
+    }
   }
   
   createReducer(...args) {
