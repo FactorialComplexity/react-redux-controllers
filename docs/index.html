@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Action.html">Action</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#.createReducer">createReducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#.initial">initial</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#action">action</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#error">error</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#on">on</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onError">onError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onStarted">onStarted</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onSuccess">onSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#started">started</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#success">success</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#type">type</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Controller.html">Controller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#.is">is</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#$">$</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#$$">$$</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#afterCreateStore">afterCreateStore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#areStatesEqual">areStatesEqual</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#createAction">createAction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#createReducer">createReducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#dispatchAction">dispatchAction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#reducer">reducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#subscribe">subscribe</a></span></li><li class="nav-heading">Externals</li><li class="nav-heading"><span class="nav-item-type type-external">E</span><span class="nav-item-name"><a href="external-Store.html">Store</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="external-Store.html#.getController">getController</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="Action.Stage.html">Stage</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#combineReducers">combineReducers</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#Container">Container</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#createStore">createStore</a></span></li>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>React/Redux Controllers</h1><p><em>NOTE: This guide assumes the reader is familiar with <a href="http://redux.js.org/">Redux</a> and <a href="https://facebook.github.io/react/">React</a></em>.</p>
+<p>This microframework was created for organizing the code of React/Redux applications. It is important to understand that it <em>does not</em> introduce any new fundamental concepts to how regular React/Redux application <em>works</em>. The goal is to provide the utilities for structuring React/Redux code in a way, that makes it more readable, manageable and reusable.</p>
+<p>This is achieved by two essential primitives:</p>
+<ul>
+<li><strong><a href="#Controller">Controller</a></strong></li>
+<li><strong><a href="#Container">Container</a></strong></li>
+</ul>
+<p>And one small, but important utility class:</p>
+<ul>
+<li><strong><a href="https://factorialcomplexity.github.io/react-redux-controllers/Action.html">Action</a></strong></li>
+</ul>
+<p><em>NOTE: <a href="https://factorialcomplexity.github.io/react-redux-controllers/Action.html">Action</a> in fact can be used in any Redux application separately from the rest of the framework. Action class itself has zero dependencies.</em></p>
+<h3>Installation</h3><p>The library is available as a package on NPM:</p>
+<pre class="prettyprint source"><code>npm install --save react-redux-controllers</code></pre><h3>Usage</h3><p>In order to make it work you need to replace Redux versions of <a href="http://redux.js.org/docs/api/createStore.html">createStore()</a> and <a href="http://redux.js.org/docs/api/combineReducers.html">combineReducers()</a> with ones provided by current package. I.e. basically replace :</p>
+<pre class="prettyprint source lang-javascript"><code>import { createStore, combineReducers } from 'redux'</code></pre><p>With:</p>
+<pre class="prettyprint source lang-javascript"><code>import { createStore, combineReducers } from 'react-redux-controllers'</code></pre><p><em>NOTE: If you use require() modify the code above accordingly.</em></p>
+<p>Any regular Redux code will continue to work. These functions call their vanilla Redux counterparts under the hood. They do exactly the same, unless you start passing Controller instances into combineReducers() additionally to regular reducers.</p>
+<h3>Full API Documentation</h3><ul>
+<li><a href="https://factorialcomplexity.github.io/react-redux-controllers/Controller.html">Controller</a></li>
+<li><a href="https://factorialcomplexity.github.io/react-redux-controllers/global.html#Container">Container</a></li>
+<li><a href="https://factorialcomplexity.github.io/react-redux-controllers/Action.html">Action</a></li>
+</ul>
+<p><a name="Controller"></a></p>
+<h2>Controller</h2><p>As the name of the library implies, the central concept is <strong>Controller</strong>. However, this is <em>not</em> a controller as in MVC. It is better to think of it as a &quot;data controller&quot;, responsible for managing the certain part of the application <strong>state</strong>. This includes:</p>
+<ul>
+<li><em>Sending</em> relevant <strong>actions</strong> in response to certain related events.</li>
+<li><em>Modifying</em> the state by providing the relevant <strong>reducer</strong>.</li>
+<li><em>Providing access</em> and if necessary <em>transforming</em> the data in the managed part of the <strong>state</strong>.</li>
+</ul>
+<p>Developers utilize controllers by subclassing the <a href="https://factorialcomplexity.github.io/react-redux-controllers/Controller.html">Controller</a> class provided by the framework. Instances of the Controller subclasses should then be mounted into the Redux store. This is done by passing them to <a href="https://factorialcomplexity.github.io/react-redux-controllers/global.html#combineReducers">combineReducers()</a> in place of regular reducer functions.</p>
+<pre class="prettyprint source"><code>const reducer = combineReducers({
+  todo: new ToDoController()
+})</code></pre><p><a name="Container"></a></p>
+<h2>Container</h2><p>Controllers encapsulate all the data processing logic, but it is up to <strong>Containers</strong> to connect it to the view layer. This is what you <a href="https://github.com/reactjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options">connect()</a> for in traditional Redux application. And in fact <a href="https://factorialcomplexity.github.io/react-redux-controllers/global.html#Container">Container()</a> calls it under the hood. However, instead of requiring to write the boring <em>mapToState</em> and <em>mapToDispatch</em> stuff, we will just connect it to the Controller referenced by path where it was mounted.</p>
+<pre class="prettyprint source lang-jsx"><code>import { Container } from 'react-redux-controllers'
+
+class ToDo extends Component {
+  // ...
+}
+
+export default Container(ToDo, &quot;todo.*&quot;);</code></pre><p>Behind the scene this automatically maps the whole portion of state tree at <code>state.todo</code> to the props of the exported component. However, there are couple of twists that make this more fun:</p>
+<ul>
+<li>Any method in Controller which starts with <code>$</code> is considered to be a &quot;selector&quot;. It is called whenever the relevant part of the state needs to be mapped: either by Container or with <a href="https://factorialcomplexity.github.io/react-redux-controllers/Controller.html#$">Controller.$()</a> function.</li>
+<li>Keys in the state that go immediately below the Controller's level can be marked &quot;private&quot; by prepending them with underscore (<code>_</code>). These keys are explicitly ignored by both Container and <a href="https://factorialcomplexity.github.io/react-redux-controllers/Controller.html#$">Controller.$()</a> function.</li>
+<li>Any method in Controller which start with <code>dispatch</code> is considered to be a &quot;dispatch&quot; method. It can be automatically mapped to the props by Container.</li>
+</ul>
+<p>Containers allow a lot of options for controlling what is mapped where. The details can be found in <a href="https://factorialcomplexity.github.io/react-redux-controllers/global.html#Container">API documentation</a>. Good practive however is to place all of the selector logic into Controller with minimal remapping in Containers.</p>
+<h2>Example</h2><p>Here is a quick example of the simple controller to show framework in action.</p>
+<pre class="prettyprint source lang-javascript"><code>import { Controller } from 'react-redux-controllers'
+
+class ToDoController extends Controller {
+  constructor() {
+    super()
+
+    // Create new Action and save it into this.actions.add
+    this.createAction('add')
+  }
+
+  // Provides reducer to be used by store
+  reducer() {
+    const { add } = this.actions
+
+    // this.createReducer is just a shortcut to Action.createReducer,
+    // so you do not have to import Action
+    return this.createReducer(
+      add.on((state, text) => ({
+        _items: (state._items || []).concat({ text })
+      }))
+    )
+  }
+
+  // Dispatch function. Will be mapped as `add(text)` in Container
+  dispatchAdd(text) {
+    this.dispatchAction('add', text)
+  }
+
+  // Selector function. Will be used to collect data for `props.text` in Container
+  $texts(state) {
+    return (this.$$(state)._items || []).map((item) => item.text)
+  }
+}</code></pre><p>The component that works with the controller can look this way:</p>
+<pre class="prettyprint source lang-jsx"><code>import { Container } from 'react-redux-controllers'
+
+class ToDo extends Component {
+  render() {
+    const { texts, add } = this.props
+
+    return (
+      &lt;ul>
+        {texts.map((text, i) => (
+          &lt;li key={i}>{text}&lt;/li>
+        ))}
+      &lt;/ul>
+      &lt;button onclick={add(&quot;Do something!&quot;)}>
+        Add
+      &lt;/button>
+    )
+  }
+}
+
+export default Container(ToDo, &quot;todo.*&quot;);</code></pre></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Fri Jul 21 2017 00:27:34 GMT+0300 (EEST) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

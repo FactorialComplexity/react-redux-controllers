@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>createStore.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Action.html">Action</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#.createReducer">createReducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#.initial">initial</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#action">action</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#error">error</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#on">on</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onError">onError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onStarted">onStarted</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#onSuccess">onSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#started">started</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#success">success</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Action.html#type">type</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Controller.html">Controller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#.is">is</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#$">$</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#$$">$$</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#afterCreateStore">afterCreateStore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#areStatesEqual">areStatesEqual</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#createAction">createAction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#createReducer">createReducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#dispatchAction">dispatchAction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#reducer">reducer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#subscribe">subscribe</a></span></li><li class="nav-heading">Externals</li><li class="nav-heading"><span class="nav-item-type type-external">E</span><span class="nav-item-name"><a href="external-Store.html">Store</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="external-Store.html#.getController">getController</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="Action.Stage.html">Stage</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#combineReducers">combineReducers</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#Container">Container</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#createStore">createStore</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">createStore.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { createStore as createStoreVanilla } from 'redux'
+import { __controllers } from './combineReducers'
+import Controller, {
+  __store,
+  __mountPath,
+  __mountPathString
+} from './Controller'
+
+/**
+ * Wrapper around vanilla `createStore()` from `redux` package. Creates the
+ * regular Redux store and extends it with `getController()` function.
+ */
+function createStore (reducers, preloadedState, enhancer) {
+  const store = createStoreVanilla(reducers, preloadedState, enhancer)
+
+  // Extract controller from reducers function property and
+  // flatten them for path-based look up
+  function _flattenControllers (thisControllers, thisPath) {
+    const result = { }
+
+    const controllerKeys = Object.keys(thisControllers)
+    for (let i = 0; i &lt; controllerKeys.length; ++i) {
+      const key = controllerKeys[i]
+
+      if (Controller.is(thisControllers[key])) {
+        // Assume this is a Controller
+        const controller = thisControllers[key]
+        const mountPath = thisPath.concat(key)
+        const mountPathString = mountPath.join('.')
+
+        controller[__store] = store
+        controller[__mountPath] = mountPath
+        controller[__mountPathString] = mountPathString
+
+        result[mountPathString] = thisControllers[key]
+      } else {
+        // Object with more nested controllers
+        Object.assign(result,
+            _flattenControllers(thisControllers[key], thisPath.concat(key)))
+      }
+    }
+
+    return result
+  }
+
+  const controllersByPathString = reducers[__controllers]
+      ? _flattenControllers(reducers[__controllers], [])
+      : { }
+
+  const controllersArray = Object.keys(controllersByPathString)
+      .map(key => controllersByPathString[key])
+
+  function getController (path) {
+    if (Array.isArray(path)) {
+      path = path.join('.')
+    }
+    return controllersByPathString[path]
+  }
+
+  Object.assign(store, {
+    getController
+  })
+
+  // Call Controller.afterCreateStore() hook
+  for (let i = 0; i &lt; controllersArray.length; ++i) {
+    controllersArray[i].afterCreateStore()
+  }
+
+  return store
+}
+
+export default createStore
+
+/**
+ * Regular Redux store object extended with [getController()]{@link external:Store.getController}.
+ * @external Store
+ */
+
+/**
+ * A regular Redux store is extended with this function, if created with {@link createStore}.
+ * @function external:Store.getController
+ * @param {string|Array.&lt;string>} path Path to get {@link Controller} instance mounted at that path.
+ * @returns Instance of {@link Controller} or `undefined`.
+ * @instance
+ */
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Fri Jul 21 2017 00:27:34 GMT+0300 (EEST) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
