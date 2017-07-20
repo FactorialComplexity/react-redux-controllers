@@ -134,22 +134,21 @@ describe('Controller', () => {
         super()
         this.createAction('add')
       }
-  
+
       dispatchAdd(text) {
         this.dispatchAction('add', text)
       }
-      
+
+      $texts(state) {
+        return this.$$(state)._items.map((item) => item.text)
+      }
+
       reducer() {
         const { add } = this.actions
         return this.createReducer(
-          Action.initial([]),
-          
-          add.on((state = [], text) => [
-            ...state,
-            {
-              text
-            }
-          ])
+          add.on((state, text) => ({
+            _items: (state._items || []).concat({ text })
+          }))
         )
       }
     }
@@ -158,6 +157,6 @@ describe('Controller', () => {
     const store = createStore(combineReducers({ todo: controller }))
     
     controller.dispatchAdd('hello')
-    expect(store.getState().todo[0].text).toBe('hello')
+    expect(store.getState().todo._items[0].text).toBe('hello')
   })
 })

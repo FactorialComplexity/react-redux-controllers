@@ -35,36 +35,151 @@ const getAllClassMethods = (obj) => {
   return keys;
 }
 
-export default class Controller {
+/**
+ * Base class for controllers. Controllers are responsible for managing the certain part of the
+ * **state**, which includes:
+ *
+ *  - *Sending* relevant **actions** in response to certain related events.
+ *  - *Modifying* the state by providing the relevant **reducer**.
+ *  - *Providing access* and if necessary *transforming* the data in the managed part of the
+ *    **state**.
+ *
+ * Controller is intended to be subclassed. It won't work as is, because it doesn't provide 
+ * a reducer function ([reducer()]{@link Controller#reducer} returns `undefined`).
+ *
+ * The only function mandatory for overriding is:
+ *
+ *  - [reducer()]{@link Controller#reducer} - to provide the reducer function.
+ *
+ * You may also need to override:
+ *
+ *  - [afterCreateStore()]{@link Controller#afterCreateStore} - will be called for all Controllers
+ *    after Redux store was created and all Controllers were mounted.
+ *  - [areStatesEqual()]{@link Controller#areStatesEqual} - to control the optimizations done by
+ *    {@link Container}. If you follow Redux recommendation of immutability and your Controller
+ *    selector methods only transform the global state (which is also highly recommended), you do
+ *    **not need** to override this method.
+ *
+ * In order to utilize the full power of the framework, subclasses define two types of functions:
+ * 
+ *  - **Selectors** transform the part of the Controller-managed state into different structure.
+ *    Any method that starts with `$` symbol is considered to be a selector.
+ *  - **Dispatches** are special functions that are expected to dispatch some actions either
+ *    synchronously or asynchronously. Any method that starts with `dispatch` is considered to be
+ *    a dispatch method.
+ *
+ * @example
+ * class ToDoController extends Controller {
+ *   constructor() {
+ *     super()
+ *     this.createAction('add')
+ *   }
+ *
+ *   // Dispatch function. Will be mapped as `add(text)` in Container
+ *   dispatchAdd(text) {
+ *     this.dispatchAction('add', text)
+ *   }
+ * 
+ *   // Selector function. Will be used to collect data for `props.text` in Container
+ *   $texts(state) {
+ *     return this.$$(state)._items.map((item) => item.text)
+ *   }
+ *
+ *   reducer() {
+ *     const { add } = this.actions
+ *     return this.createReducer(
+ *       add.on((state, text) => ({
+ *         _items: (state._items || []).concat({ text })
+ *       }))
+ *     )
+ *   }
+ * }
+ */
+class Controller {
+  /**
+   * Constructor is a good place to create all [actions]{@link Action} that Controller needs.
+   * And of course to pass and store any external dependencies and parameters Controller needs
+   * to function.
+   */
   constructor() {
     this[__actions] = { };
   }
   
-  static is(instance) {
+  /**
+   * Checks if provided value *looks like* an instance of the Controller class. It does pretty
+   * minimal check and should not be relied to actually detect the fact of being Controller's
+   * subclass if needed.
+   *
+   * @param instance Value to be checked.
+   */
+  static is(value) {
     // Enough to consider instance to be a Controller for most cases
-    return instance && typeof instance.reducer === 'function';
+    return value && typeof value.reducer === 'function';
   }
-
+  
+  /**
+   * Redux store object this controller is mounted to.
+   * @type {Store}
+   */
   get store() {
     return this[__store];
   }
 
+  /**
+   * Path under which this controller is mounted as the array of keys.
+   * @type {string[]}
+   */
   get mountPath() {
     return this[__mountPath];
   }
 
+  /**
+   * Path under which this controller is mounted as the single string. Path components are joined
+   * with `.` (dot) symbol.
+   * @type {string}
+   */
   get mountPathString() {
     return this[__mountPathString];
   }
   
+  /**
+   * Array of [Actions]{@link Action} previously created by
+   * [Controller.createAction()]{@link Controller#createAction} calls.
+   * @type {Object.<string, Action>}
+   */
   get actions() {
     return this[__actions];
   }
   
+  /**
+   * Redux store `dispatch()` function.
+   * @type {function}
+   */
   get dispatch() {
     return this[__store] ? this[__store].dispatch : undefined;
   }
   
+  /**
+   * Create new {@link Action} and attach it to [Controller.actions]{@link Controller#actions}.
+   * Intended to be used from inside the Controller. If provided a string key the {@link Action} 
+   * will be created with type equal to `${Controller.mountPathString}/${action}`.
+   *
+   * @param {string|Action} action String to be used as action key in {@link Controller#actions}
+   *   and as a part of [Action.baseType]{@link Action#baseType}. Alternatively the ready made
+   *   {@link Action} can be specified to be attached to the Controller.
+   * @param {(string)} key If {@link Action} object was passed as first argument, this defines
+   *    a key to be used in [Controller.actions]{@link Controller#actions}.
+   *
+   * @example
+   * // Create new action with key "update" and attach it to the Controller
+   * this.createAction("update")
+   *
+   * // Attach existing Action to the Controller using key "load"
+   * this.createAction(loadAction, "load")
+   *
+   * // Later on these actions are available in this.actions:
+   * const { update, load } = this.actions
+   */
   createAction(action, key) {
     if (typeof action === "string") {
       const baseType = () => (this[__mountPathString] + "/" + action);
@@ -74,23 +189,49 @@ export default class Controller {
     }
   }
   
+  /**
+   * Dispatch the {@link Action} into the store by key and optionally a stage with the provided
+   * payload. This is a shortcut method provided for convenience. Is it intended to be used from
+   * inside the Controller.
+   * 
+   * @param {string} actionType Action key string with optional stage (see {@link Action}).
+   * @param payload Any object that should be sent as action payload.
+   *
+   * @example
+   * // Dispatch action with key "update"
+   * dispatchAction("update", { objectId: "1" })
+   *
+   * // Dispatch action with key "update" and stage "started"
+   * dispatchAction("update.started", { objectId: "1" })
+   */
   dispatchAction(actionType, payload) {
+    // TODO: error processing if action was not found.
+    
     const dotI = actionType.indexOf(".");
     const actionBaseType = dotI === -1 ?
         actionType : actionType.substring(0, dotI);
     const actionStage = dotI === -1 ?
         undefined : actionType.substring(dotI+1);
     
-    this.store.dispatch(this.actions[actionBaseType].action(
-        actionStage, payload));
+    if (actionStage === 'error') {
+      this.store.dispatch(this.actions[actionBaseType].error(payload))
+    } else {
+      this.store.dispatch(this.actions[actionBaseType].action(
+          actionStage, payload))
+    }
   }
   
+  /**
+   * This a convenience function, which simply calls
+   * [Action.createReducer()]{@link Action#createReducer} passing through all of the arguments.
+   */
   createReducer(...args) {
     return Action.createReducer(...args);
   }
   
   /**
-   * Get the part of the stored state, managed by the controller.
+   * Get the raw part of the stored state, managed by the controller. No selectors
+   * will be called and no dispatches to be added to the result.
    *
    * @param {Object} state The root of the state tree managed by the Redux
    *    store.
@@ -104,9 +245,10 @@ export default class Controller {
   }
     
   /**
-   * Select the specified path of the stored state. If no path is specified
-   * (any falsey value or "*"), the full state of the tree is returned. All the
-   * required selector functions are called in both cases.
+   * Select the value at specified path of the stored state. If no path is specified
+   * (any falsey value or `"*"`), the full state of the tree is returned. All the
+   * required selector functions are called in both cases, first level keys in teh state that
+   * start with underscore symbol (`_`) are considered "private" and ommitted.
    *
    * @param {Object} state The root of the state tree managed by the Redux
    *    store.
@@ -116,6 +258,9 @@ export default class Controller {
    *    string of dot separated keys or an array of strings. Falsey value as
    *    well as not specifying this parameter makes the function to return the
    *    full state managed by the controller.
+   *
+   * @returns Value selected from the specified path or `undefined` if nothing found
+   *    at the specified path.
    */
   $(state, path) {
     let _state, _path;
@@ -178,6 +323,27 @@ export default class Controller {
     }
   }
     
+  /**
+   * Called when Controller reducer is needed for the first time. Override this method and return
+   * the reducer function. Reducer function is executed on the part state where Controller
+   * was mounted. It is recommended to utilize {@link Action} and convenience functions 
+   * [Controller.createReducer]{@link Controller#createReducer},
+   * [Controller.createAction]{@link Controller#createAction} and
+   * [Controller.dispatchAction]{@link Controller#dispatchAction}, but is not mandatory. A regular
+   * Redux reducer function will also work just fine.
+   *
+   * @returns {function} Reducer function.
+   *
+   * @example
+   * reducer() {
+   *   const { update } = this.actions
+   *   
+   *   return this.createReducer(
+   *     update.onStarted((state, payload) => ({...state, isUpdating: true })),
+   *     update.onSuccess((state, items) => ({...state, items, isUpdating: false }))
+   *   )
+   * }
+   */
   reducer() {
     // to be overriden in children
   }
@@ -192,6 +358,8 @@ export default class Controller {
   
   /**
    * Returns array of all dispatch* function names defined in the Controller.
+   *
+   * @private
    */
   getAllDispatchKeys() {
     return getAllClassMethods(this).filter((key) => /^dispatch./.test(key) &&
@@ -199,8 +367,9 @@ export default class Controller {
   }
   
   /**
-   * Returns array of all $* function names (selectors) defined in the
-   * Controller.
+   * Returns array of all $* function names (selectors) defined in the Controller.
+   *
+   * @private
    */
   getAllSelectKeys() {
     return getAllClassMethods(this)
@@ -208,7 +377,7 @@ export default class Controller {
   }
   
   /**
-   * This method is used by Container for optimizations. It checks if the state
+   * This method is used by {#link Container} for optimizations. It checks if the state
    * was changed comparing to an old state, so selectors need to be reevaluated.
    * By default it compares state objects by reference (`===`). This should
    * be fine if your state is immutable, which is highly recommended. Otherwise
@@ -218,8 +387,13 @@ export default class Controller {
    *
    * Its purpose is basically the same as of `options.areStatesEqual` argument
    * to `connect` function from `react-redux` library.
+   *
+   * @param $$prev Previous value of part of the state managed by the Controller.
+   * @param $$next Next value part of the state managed by the Controller to be compared.
    */
   areStatesEqual($$prev, $$next) {
     return $$prev === $$next;
   }
 }
+
+export default Controller
