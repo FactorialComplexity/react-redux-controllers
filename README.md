@@ -124,7 +124,7 @@ class ToDoController extends Controller {
 
   // Selector function. Will be used to collect data for `props.text` in Container
   $texts(state) {
-    return this.$$(state)._items.map((item) => item.text)
+    return (this.$$(state)._items || []).map((item) => item.text)
   }
 }
 
