@@ -12,7 +12,7 @@ export const __controllers = _Symbol('controllers');
  * key of the returned function. __controllers is passed up the chain and
  * is intended to be used by the `createStore()`.
  */
-export default function combineReducers(reducers) {
+function combineReducers(reducers) {
   
   // Preprocess reducers
   const reducerKeys = Object.keys(reducers);
@@ -54,3 +54,5 @@ export default function combineReducers(reducers) {
 
   return combinedReducer;
 }
+
+export default combineReducers

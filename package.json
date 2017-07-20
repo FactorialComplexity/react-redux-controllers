@@ -16,6 +16,7 @@
     "test": "cross-env BABEL_ENV=commonjs jest",
     "test:watch": "yarn test -- --watch",
     "test:cov": "yarn test -- --coverage",
+    "jsdoc": "jsdoc -c .jsdocrc ./src",
     "prepublish": "npm run clean && npm run build"
   },
   "author": "Vitaliy Ivanov",
@@ -69,6 +70,9 @@
     "eslint-plugin-jsx-a11y": "2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "jest": "^20.0.4",
+    "jsdoc": "^3.5.3",
+    "latodoc": "smeijer/latodoc",
+    "minami": "FactorialComplexity/minami#improved",
     "react": "^15.4.0",
     "react-dom": "^15.6.1",
     "react-redux": "^5.0.4",

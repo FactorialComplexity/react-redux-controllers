@@ -10,7 +10,7 @@ import Controller, {
  * Wrapper around vanilla `createStore()` from `redux` package. Creates the
  * regular Redux store and extends it with `getController()` function.
  */
-export default function createStore(reducers, preloadedState, enhancer) {
+function createStore(reducers, preloadedState, enhancer) {
   const store = createStoreVanilla(reducers, preloadedState, enhancer);
   
   // Extract controller from reducers function property and
@@ -69,3 +69,18 @@ export default function createStore(reducers, preloadedState, enhancer) {
   
   return store;
 }
+
+export default createStore
+
+/**
+ * Regular Redux store object extended with [getController()]{@link external:Store.getController}.
+ * @external Store
+ */
+
+/**
+ * A regular Redux store is extended with this function, if created with {@link createStore}.
+ * @function external:Store.getController
+ * @param {string|Array.<string>} path Path to get {@link Controller} instance mounted at that path.
+ * @returns Instance of {@link Controller} or `undefined`.
+ * @instance
+ */
