@@ -28,7 +28,7 @@ describe('Controller', () => {
       )
     }
   }
-  
+
   it('exposes valid public API: mount path, store and Controller.is', () => {
     const controller = new NoOpController()
     const store = createStore(combineReducers({ controller }))
@@ -153,7 +153,7 @@ describe('Controller', () => {
     expect(controller.$(state, 'noFoo')).toBe(controlled._noFoo)
     expect(controller.$(state, 'sub.subFoo')).toBe('subBar')
   })
-  
+
   it('provides correct wrapper functions for Action functionality', () => {
     const controller = new ToDoController()
     const store = createStore(combineReducers({ todo: controller }))
@@ -161,16 +161,16 @@ describe('Controller', () => {
     controller.dispatchAdd('hello')
     expect(store.getState().todo._items[0].text).toBe('hello')
   })
-  
+
   it('calls listener registered with subscribe() when value at path was changed', () => {
     const controller = new ToDoController()
     createStore(combineReducers({ todo: controller }))
-    
+
     const listener = jest.fn()
     controller.subscribe('texts', listener)
 
     controller.dispatchAdd('hello')
-    
+
     expect(listener).toHaveBeenCalledTimes(1)
     expect(listener).toHaveBeenCalledWith(['hello'], [])
   })

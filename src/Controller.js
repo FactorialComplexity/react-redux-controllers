@@ -322,23 +322,23 @@ class Controller {
       return selectedState
     }
   }
-  
+
   /**
    * Passed as a callback to [Controller.subscribe()]{@link Controller#subscribe}.
    * @callback Controller~SubscribeListener
    * @param value Current value at the subscribed path.
    * @param prevValue Previous value at the subscribed path.
    */
-  
+
   /**
    * Subscribes to changes of some value at path relative to the controller.
-   * 
-   * @param {string|Array.<string>} 
-   * @param {Controller~SubscribeListener} 
+   *
+   * @param {string|Array.<string>}
+   * @param {Controller~SubscribeListener}
    */
-  subscribe (path, listener, isEqual=(value, prevValue) => (value === prevValue)) {
+  subscribe (path, listener, isEqual = (value, prevValue) => (value === prevValue)) {
     let value = this.$(path)
-    
+
     return this.store.subscribe(() => {
       let prevValue = value
       value = this.$(path)

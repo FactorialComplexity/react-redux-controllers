@@ -7,40 +7,49 @@ function strippedDispatchKey (dispatchKey) {
   return stripped
 }
 
-function createSelector (controller, path, prop) {
-  if (!controller) {
-    // Just map the relevant part of the state
-    if (prop === '*') {
-      return function (state, nextProps) {
-        Object.assign(nextProps, path.reduce((prevState, key) =>
-            prevState ? prevState[key] : undefined, state))
+function getSubState (state, path) {
+  return path.reduce((prevState, key) => prevState ? prevState[key] : undefined, state)
+}
+
+function assignToPath (state, value, path) {
+  path.forEach((component, index) => {
+    if (index !== path.length - 1) {
+      if (!state[component]) {
+        state[component] = { }
       }
+
+      state = state[component]
     } else {
-      return function (state, nextProps) {
-        nextProps[prop] = path.reduce((prevState, key) =>
-            prevState ? prevState[key] : undefined, state)
-      }
+      state[component] = value
     }
+  })
+}
+
+function assignToProps (nextProps, mappedState, prop) {
+  if (prop === '*') {
+    Object.assign(nextProps, mappedState)
   } else {
-    let prevState, mappedState
+    nextProps[prop] = mappedState
+  }
+}
 
-    return function (state, nextProps) {
-      const $$state = controller.$$(state)
+function createSelector (controller, path, prop) {
+  let prevState, mappedState
 
-      // Optimization: do not do any mapping if nothing has changed in
-      // controller state tree
-      if (controller.areStatesEqual(prevState, $$state)) {
-        return mappedState
-      }
+  return function (state, nextProps) {
+    const $$state = controller.$$(state)
 
-      prevState = state
+    // Optimization: do not do any mapping if nothing has changed in
+    // controller state tree
+    if (!controller.areStatesEqual(prevState, $$state)) {
+      prevState = $$state
       mappedState = controller.$(state, path)
+    }
 
-      if (prop === '*') {
-        Object.assign(nextProps, mappedState)
-      } else {
-        nextProps[prop] = mappedState
-      }
+    if (prop === '*') {
+      Object.assign(nextProps, mappedState)
+    } else {
+      nextProps[prop] = mappedState
     }
   }
 }
@@ -129,7 +138,7 @@ export default function createMapper (getController, mappings, contextString) {
                 break
               }
 
-              dispatches[m.prop] = dispatch
+              dispatches[m.prop] = dispatch.bind(controller)
               break
             }
           }
@@ -140,7 +149,52 @@ export default function createMapper (getController, mappings, contextString) {
       }
 
       if (!controller) {
-        selectors.push(createSelector(undefined, m.path, m.prop))
+        // There is no controller in path, check if there are controllers deeper
+        const pathString = m.path.join('.')
+        const allControllers = getController()
+        const controllersAtPath = []
+
+        for (const mountPathString in allControllers) {
+          if (mountPathString.startsWith(pathString + '.')) {
+            controllersAtPath.push({
+              subPath: allControllers[mountPathString].mountPath.slice(m.path.length),
+              controller: allControllers[mountPathString]
+            })
+          }
+        }
+
+        if (controllersAtPath.length > 0) {
+          let prevState, prevMappedState
+
+          selectors.push((state, nextProps) => {
+            const subState = getSubState(state, m.path)
+            const subStateChanged = subState !== getSubState(prevState, m.path)
+
+            const hasChangedControllerStates = prevState &&
+              !!(controllersAtPath.find(({ controller }) =>
+                !controller.areStatesEqual(controller.$$(state), controller.$$(prevState))))
+
+            if (!subStateChanged && !hasChangedControllerStates) {
+              assignToProps(nextProps, prevMappedState, m.prop)
+            } else {
+              let mappedState = Object.assign({ }, getSubState(state, m.path))
+
+              controllersAtPath.forEach(({ subPath, controller }) => {
+                assignToPath(mappedState, controller.$(state), subPath)
+              })
+
+              assignToProps(nextProps, mappedState, m.prop)
+
+              prevState = state
+              prevMappedState = mappedState
+            }
+          })
+        } else {
+          // Plain state without controllers
+          selectors.push((state, nextProps) => {
+            assignToProps(nextProps, getSubState(state, m.path), m.prop)
+          })
+        }
       }
     }
   }
