@@ -53,7 +53,10 @@ function createStore (reducers, preloadedState, enhancer) {
   function getController (path) {
     if (Array.isArray(path)) {
       path = path.join('.')
+    } else if (path === undefined) {
+      return controllersByPathString
     }
+
     return controllersByPathString[path]
   }
 
@@ -79,7 +82,9 @@ export default createStore
 /**
  * A regular Redux store is extended with this function, if created with {@link createStore}.
  * @function external:Store.getController
- * @param {string|Array.<string>} path Path to get {@link Controller} instance mounted at that path.
- * @returns Instance of {@link Controller} or `undefined`.
+ * @param {(string|Array.<string>)=} path Path to get {@link Controller} instance mounted at that
+ *   path or `undefined`.
+ * @returns Instance of {@link Controller}, `undefined` or the object containing all
+ *   [controllers]{@link Controller} with mount path strings as the keys.
  * @instance
  */

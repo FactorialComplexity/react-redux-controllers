@@ -4,29 +4,74 @@
 import { createStore, combineReducers } from '../src'
 import createMapper from '../src/mapper/createMapper'
 import normalizeMappings from '../src/mapper/normalizeMappings'
-import { NoOpController } from './helpers/controllers.js'
+import shallowEqual from '../src/utils/shallowEqual'
+import Controller from '../src/Controller'
 
 describe('createMapper', () => {
   const dispatchBar = jest.fn()
-  class MyController extends NoOpController {
-    $foo (state) {
-      return 'bar'
+  class MyController extends Controller {
+    constructor () {
+      super()
+
+      this.createAction('bar')
     }
 
-    dispatchBar () { dispatchBar() }
+    $foo (state) {
+      return !this.$$(state)._barDispatched ? 'bar' : 'barbar'
+    }
+
+    dispatchBar () {
+      this.dispatchAction('bar')
+      dispatchBar()
+    }
+
+    reducer () {
+      const { bar } = this.actions
+      return this.createReducer(
+        bar.on((state) => Object.assign({}, state, { _barDispatched: true }))
+      )
+    }
   }
 
-  const controller = new MyController()
-  const store = createStore(combineReducers({ controller }), {
-    controller: {
-      preloaded: 'preloaded value',
-      another: 'another preloaded value',
-      _doNotMap: 'value'
-    }
-  })
+  let controller
+  let store
+  let deepController
+  let deepStore
 
   beforeEach(() => {
     dispatchBar.mockClear()
+
+    controller = new MyController()
+    const $foo = controller.$foo.bind(controller)
+    controller.$foo = jest.fn((...args) => $foo(...args))
+
+    store = createStore(combineReducers({ controller }), {
+      controller: {
+        preloaded: 'preloaded value',
+        another: 'another preloaded value',
+        _barDispatched: false
+      }
+    })
+
+    deepController = new MyController()
+    const $deepFoo = deepController.$foo.bind(deepController)
+    deepController.$foo = jest.fn((...args) => $deepFoo(...args))
+
+    deepStore = createStore(combineReducers({
+      key1: combineReducers({
+        key2: combineReducers({ deepController })
+      })
+    }), {
+      key1: {
+        key2: {
+          deepController: {
+            preloaded: 'preloaded value',
+            another: 'another preloaded value',
+            _doNotMap: 'value'
+          }
+        }
+      }
+    })
   })
 
   it('creates a mapper that maps controller dispatches, selectors and direct values from store', () => {
@@ -158,5 +203,53 @@ describe('createMapper', () => {
 
     expect(Object.keys(result).length).toBe(4)
     expect(Object.keys(result.kungfu).length).toBe(3)
+  })
+
+  it('assigns exactly the same object to props if underlying state was not changed', () => {
+    const mapper = createMapper(store.getController,
+      normalizeMappings(['controller.*']), 'createMapper.spec')
+
+    const result1 = mapper(store.getState())
+    expect(controller.$foo).toHaveBeenCalled()
+    controller.$foo.mockClear()
+
+    const result2 = mapper(store.getState())
+
+    expect(controller.$foo).not.toHaveBeenCalled()
+    expect(shallowEqual(result1, result2)).toBe(true)
+    controller.$foo.mockClear()
+
+    result2.bar()
+
+    const result3 = mapper(store.getState())
+    expect(controller.$foo).toHaveBeenCalled()
+    expect(shallowEqual(result2, result3)).toBe(false)
+  })
+
+  it('supports deep mapping of state, calling selectors when required', () => {
+    const mapper = createMapper(deepStore.getController,
+      normalizeMappings(['key1.*', 'key1.key2.deepController.bar']), 'createMapper.spec')
+
+    const result = mapper(deepStore.getState())
+
+    expect(Object.keys(result.key2.deepController).length).toBe(3)
+
+    expect(result.key2.deepController.foo).toBe('bar')
+    expect(result.key2.deepController.preloaded).toBe('preloaded value')
+    expect(result.key2.deepController.another).toBe('another preloaded value')
+    deepController.$foo.mockClear()
+
+    const result2 = mapper(deepStore.getState())
+
+    expect(deepController.$foo).not.toHaveBeenCalled()
+    expect(shallowEqual(result, result2)).toBe(true)
+    deepController.$foo.mockClear()
+
+    result2.bar()
+
+    const result3 = mapper(deepStore.getState())
+
+    expect(deepController.$foo).toHaveBeenCalled()
+    expect(shallowEqual(result2, result3)).toBe(false)
   })
 })
