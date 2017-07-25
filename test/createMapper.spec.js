@@ -4,6 +4,7 @@
 import { createStore, combineReducers } from '../src'
 import createMapper from '../src/mapper/createMapper'
 import normalizeMappings from '../src/mapper/normalizeMappings'
+import shallowEqual from '../src/utils/shallowEqual'
 import { NoOpController } from './helpers/controllers.js'
 
 describe('createMapper', () => {
@@ -16,17 +17,23 @@ describe('createMapper', () => {
     dispatchBar () { dispatchBar() }
   }
 
-  const controller = new MyController()
-  const store = createStore(combineReducers({ controller }), {
-    controller: {
-      preloaded: 'preloaded value',
-      another: 'another preloaded value',
-      _doNotMap: 'value'
-    }
-  })
+  let controller
+  let store
 
   beforeEach(() => {
     dispatchBar.mockClear()
+
+    controller = new MyController()
+    const $foo = controller.$foo.bind(this)
+    controller.$foo = jest.fn((...args) => $foo(...args))
+
+    store = createStore(combineReducers({ controller }), {
+      controller: {
+        preloaded: 'preloaded value',
+        another: 'another preloaded value',
+        _doNotMap: 'value'
+      }
+    })
   })
 
   it('creates a mapper that maps controller dispatches, selectors and direct values from store', () => {
@@ -158,5 +165,19 @@ describe('createMapper', () => {
 
     expect(Object.keys(result).length).toBe(4)
     expect(Object.keys(result.kungfu).length).toBe(3)
+  })
+
+  it('assigns exactly the same object to props if underlying state was not changed', () => {
+    const mapper = createMapper(store.getController,
+      normalizeMappings(['controller.*']), 'createMapper.spec')
+
+    const result1 = mapper(store.getState())
+    expect(controller.$foo).toHaveBeenCalled()
+    controller.$foo.mockClear()
+
+    const result2 = mapper(store.getState())
+
+    expect(controller.$foo).not.toHaveBeenCalled()
+    expect(shallowEqual(result1, result2)).toBe(true)
   })
 })

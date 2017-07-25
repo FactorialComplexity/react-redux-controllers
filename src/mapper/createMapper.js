@@ -29,12 +29,10 @@ function createSelector (controller, path, prop) {
 
       // Optimization: do not do any mapping if nothing has changed in
       // controller state tree
-      if (controller.areStatesEqual(prevState, $$state)) {
-        return mappedState
+      if (!controller.areStatesEqual(prevState, $$state)) {
+        prevState = $$state
+        mappedState = controller.$(state, path)
       }
-
-      prevState = state
-      mappedState = controller.$(state, path)
 
       if (prop === '*') {
         Object.assign(nextProps, mappedState)
