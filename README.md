@@ -1,5 +1,7 @@
 # React/Redux Controllers
 
+[![Build Status](https://travis-ci.org/FactorialComplexity/react-redux-controllers.svg?branch=master)](https://travis-ci.org/FactorialComplexity/react-redux-controllers)
+
 *NOTE: This guide assumes the reader is familiar with [Redux](http://redux.js.org/) and [React](https://facebook.github.io/react/)*.
 
 This microframework was created for organizing the code of React/Redux applications. It is important to understand that it *does not* introduce any new fundamental concepts to how regular React/Redux application *works*. The goal is to provide the utilities for structuring React/Redux code in a way, that makes it more readable, manageable and reusable.
