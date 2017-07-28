@@ -425,7 +425,7 @@ class Controller {
   }
   
   /**
-   * This method is used by {#link Container} for optimizations. It checks if the state
+   * This method is used by {@link Container} for optimizations. It checks if the state
    * was changed comparing to an old state, so selectors need to be reevaluated.
    * By default it calls [Controller.areStatesEqual]{@link Controller#areStatesEqual}
    * and returns the opposite boolean value.
