@@ -37,12 +37,10 @@ function createSelector (controller, path, prop) {
   let prevState, mappedState
 
   return function (state, nextProps) {
-    const $$state = controller.$$(state)
-
     // Optimization: do not do any mapping if nothing has changed in
     // controller state tree
-    if (!controller.areStatesEqual(prevState, $$state)) {
-      prevState = $$state
+    if (controller.hasChanges(prevState, state)) {
+      prevState = state
       mappedState = controller.$(state, path)
     }
 
@@ -172,7 +170,7 @@ export default function createMapper (getController, mappings, contextString) {
 
             const hasChangedControllerStates = prevState &&
               !!(controllersAtPath.find(({ controller }) =>
-                !controller.areStatesEqual(controller.$$(state), controller.$$(prevState))))
+                controller.hasChanges(prevState, state)))
 
             if (!subStateChanged && !hasChangedControllerStates) {
               assignToProps(nextProps, prevMappedState, m.prop)

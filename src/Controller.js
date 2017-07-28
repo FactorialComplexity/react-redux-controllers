@@ -239,7 +239,7 @@ class Controller {
   $$ (state) {
     let innerState = state
     this[__mountPath].forEach((key) => {
-      innerState = innerState[key]
+      innerState = innerState ? innerState[key] : undefined
     })
     return innerState
   }
@@ -403,9 +403,9 @@ class Controller {
   }
 
   /**
-   * This method is used by {#link Container} for optimizations. It checks if the state
-   * was changed comparing to an old state, so selectors need to be reevaluated.
-   * By default it compares state objects by reference (`===`). This should
+   * This method is used by [Controller.hasChanges]{@link Controller#hasChanges} by default.
+   * It checks if the state was changed comparing to an old state, so selectors need to be
+   * reevaluated. By default it compares state objects by reference (`===`). This should
    * be fine if your state is immutable, which is highly recommended. Otherwise
    * you are responsible for overriding this check according to your needs or
    * just return false if you want reevaluate all selectors each time the state
@@ -414,11 +414,29 @@ class Controller {
    * Its purpose is basically the same as of `options.areStatesEqual` argument
    * to `connect` function from `react-redux` library.
    *
+   * If you need to check the parts of the state, not managed by the controller,
+   * override [Controller.hasChanges]{@link Controller#hasChanges} instead.
+   *
    * @param $$prev Previous value of part of the state managed by the Controller.
    * @param $$next Next value part of the state managed by the Controller to be compared.
    */
   areStatesEqual ($$prev, $$next) {
     return $$prev === $$next
+  }
+  
+  /**
+   * This method is used by {#link Container} for optimizations. It checks if the state
+   * was changed comparing to an old state, so selectors need to be reevaluated.
+   * By default it calls [Controller.areStatesEqual]{@link Controller#areStatesEqual}
+   * and returns the opposite boolean value.
+   *
+   * It is useful, if controller selects parts of the state, not managed by itself.
+   *
+   * @param prevState Previous Redux state value.
+   * @param next Next Redux state value.
+   */
+  hasChanges (prevState, nextState) {
+    return !this.areStatesEqual(this.$$(prevState), this.$$(nextState))
   }
 }
 
