@@ -115,6 +115,26 @@ describe('Controller', () => {
     expect(controller.$(state, 'sub.hello')).toEqual('world')
   })
 
+  it('$() and $$() operates on store.getState() if state is not passed as parameter', () => {
+    const controller = new NoOpController()
+    const state = {
+      controlled: {
+        foo: 'bar',
+        sub: {
+          hello: 'world'
+        }
+      }
+    }
+
+    createStore(combineReducers({
+      controlled: controller
+    }), state)
+
+    expect(controller.$()).toEqual({ foo: 'bar', sub: { hello: 'world' } })
+    expect(controller.$('foo')).toBe('bar')
+    expect(controller.$$()).toEqual({ foo: 'bar', sub: { hello: 'world' } })
+  })
+
   it('calls selectors and forwards the return values when using $()', () => {
     class MyController extends NoOpController {
       $noFoo (state) {
