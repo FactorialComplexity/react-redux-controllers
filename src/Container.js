@@ -32,11 +32,11 @@ import warning from './utils/warning'
  * | `"path.$"` | Same as `"path.select*"` | |
  * | `{ "path.select*": "*" }` | Same as `"path.select*"` | |
  * | `{ "path.select*": "keys" }` | Only map state managed by the controller to props (no dispatches). | `path.key1` to `props.keys.key1` <br> `path.key2` to `props.keys.key2` ... |
- *
+ * | `{ "path": (nextProps, value) => { ... } }` | Provide custom {@link AssignerFunction} to map `value` to the `nextProps`. `nextProps` object should be modified in place. Function is not expected to return anything. | |
  *
  *
  * @param {React.Component} WrappedComponent Component to connect.
- * @param {string|Object.<string, string>} mappings Any amount of mappings that should be applied
+ * @param {string|Object.<string, string|AssignerFunction>} mappings Any amount of mappings that should be applied
  *   when connecting Redux store to the component.
  *
  */
@@ -64,5 +64,21 @@ function Container (WrappedComponent, ...mappings) {
 
   return withMapper(connectAdvanced(factory)(WrappedComponent), ...mappings)
 }
+
+/**
+ * Can be used in {@link Container} to add adjustment to default remapping logic.
+ * @callback AssignerFunction
+ * @param nextProps Dictionary of properties that wrapped component is about to get.
+ *   This object should be modified in place. It doesn't include value
+ * @param value Value obtained from the specific mapping.
+ * @example
+ * Container(MyComponent, {
+ *   'books': (nextProps, books) => {
+ *     nextProps.book = foo.books[nextProps.bookId]
+ *     // Nothing else from books will be mapped
+ *     // MyComponent will receive both book and bookId in props
+ *   }
+ * })
+ */
 
 export default Container

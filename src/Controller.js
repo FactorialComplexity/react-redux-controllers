@@ -234,9 +234,13 @@ class Controller {
    * will be called and no dispatches to be added to the result.
    *
    * @param {Object} state The root of the state tree managed by the Redux
-   *    store.
+   *    store. If ommitted, the function will operate on current state of the store.
    */
   $$ (state) {
+    if (arguments.length === 0) {
+      state = this.store.getState()
+    }
+
     let innerState = state
     this[__mountPath].forEach((key) => {
       innerState = innerState ? innerState[key] : undefined
@@ -247,11 +251,11 @@ class Controller {
   /**
    * Select the value at specified path of the stored state. If no path is specified
    * (any falsey value or `"*"`), the full state of the tree is returned. All the
-   * required selector functions are called in both cases, first level keys in teh state that
+   * required selector functions are called in both cases, first level keys in the state that
    * start with underscore symbol (`_`) are considered "private" and ommitted.
    *
-   * @param {Object} state The root of the state tree managed by the Redux
-   *    store.
+   * @param {Object=} state The root of the state tree managed by the Redux
+   *    store. If ommitted, the function will operate on current state of the store.
    *
    * @param {(string|string[])=} path The path of the sub tree to obtain from
    *    the state, relative to the controller mount path. It should either be a
@@ -275,6 +279,8 @@ class Controller {
     } else if (arguments.length > 1) {
       _state = arguments[0]
       _path = arguments[1]
+    } else {
+      _state = this.store.getState()
     }
 
     const all = !_path || (_path.length === 0) || _path === '*'
@@ -423,9 +429,9 @@ class Controller {
   areStatesEqual ($$prev, $$next) {
     return $$prev === $$next
   }
-  
+
   /**
-   * This method is used by {#link Container} for optimizations. It checks if the state
+   * This method is used by {@link Container} for optimizations. It checks if the state
    * was changed comparing to an old state, so selectors need to be reevaluated.
    * By default it calls [Controller.areStatesEqual]{@link Controller#areStatesEqual}
    * and returns the opposite boolean value.

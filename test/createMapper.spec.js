@@ -170,6 +170,28 @@ describe('createMapper', () => {
     expect(result.asterisk.another).toBe('another preloaded value')
   })
 
+  it('creates a mapper that supports remapping with custom function', () => {
+    const mapper = createMapper(store.getController,
+      normalizeMappings([{
+        'controller': (nextProps, controller) => {
+          nextProps['foo'] = controller
+        }
+      }]),
+      'createMapper.spec')
+
+    const result = mapper(store.getState())
+
+    expect(Object.keys(result.foo)).toHaveLength(4)
+
+    expect(typeof result.foo.bar).toBe('function')
+    result.foo.bar()
+    expect(dispatchBar).toHaveBeenCalled()
+
+    expect(result.foo.foo).toBe('bar')
+    expect(result.foo.preloaded).toBe('preloaded value')
+    expect(result.foo.another).toBe('another preloaded value')
+  })
+
   it("creates a mapper that supports remapping only Controller's dispatches", () => {
     const mapper = createMapper(store.getController,
         normalizeMappings([ 'controller.dispatch*', { 'controller.dispatch*': 'kungfu' } ]),
