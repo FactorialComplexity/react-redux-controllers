@@ -80,6 +80,7 @@
     "react-test-renderer": "^15.6.1",
     "redux": "^3.6.0",
     "rimraf": "^2.3.4",
+    "standard": "^10.0.3",
     "webpack": "^1.11.0"
   },
   "files": [
@@ -91,6 +92,11 @@
   "browserify": {
     "transform": [
       "loose-envify"
+    ]
+  },
+  "standard": {
+    "ignore": [
+      "/docs"
     ]
   }
 }

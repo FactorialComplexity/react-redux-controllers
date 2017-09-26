@@ -253,7 +253,7 @@ class Controller {
    * (any falsey value or `"*"`), the full state of the tree is returned. All the
    * required selector functions are called in both cases, first level keys in the state that
    * start with underscore symbol (`_`) are considered "private" and ommitted.
-   * 
+   *
    * @param {Object=} state The root of the state tree managed by the Redux
    *    store. If ommitted, the function will operate on current state of the store.
    *
@@ -429,7 +429,7 @@ class Controller {
   areStatesEqual ($$prev, $$next) {
     return $$prev === $$next
   }
-  
+
   /**
    * This method is used by {@link Container} for optimizations. It checks if the state
    * was changed comparing to an old state, so selectors need to be reevaluated.
