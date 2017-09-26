@@ -25,18 +25,10 @@ function assignToPath (state, value, path) {
   })
 }
 
-function assignToProps (nextProps, mappedState, prop) {
-  if (prop === '*') {
-    Object.assign(nextProps, mappedState)
-  } else {
-    nextProps[prop] = mappedState
-  }
-}
-
-function createSelector (controller, path, prop) {
+function createSelectorMapper (controller, path, assigner) {
   let prevState, mappedState
 
-  return function (state, nextProps) {
+  return (state, nextProps) => {
     // Optimization: do not do any mapping if nothing has changed in
     // controller state tree
     if (controller.hasChanges(prevState, state)) {
@@ -44,24 +36,32 @@ function createSelector (controller, path, prop) {
       mappedState = controller.$(state, path)
     }
 
-    if (prop === '*') {
-      Object.assign(nextProps, mappedState)
-    } else {
-      nextProps[prop] = mappedState
-    }
+    assigner(nextProps, mappedState)
   }
 }
 
-function resolveAllDispatches (controller, prop, dispatches) {
-  const assignTo = prop === '*' ? dispatches : { }
-  if (prop !== '*') {
-    dispatches[prop] = assignTo
-  }
-
+function getAllDispatches (controller) {
+  const dispatches = { }
   controller.getAllDispatchKeys().forEach((dispatchKey) => {
-    assignTo[strippedDispatchKey(dispatchKey)] =
-        controller[dispatchKey].bind(controller)
+    dispatches[strippedDispatchKey(dispatchKey)] = controller[dispatchKey].bind(controller)
   })
+  return dispatches
+}
+
+function createFullControllerMapper (controller, assigner) {
+  const dispatches = getAllDispatches(controller)
+  let prevState, mappedState
+
+  return (state, nextProps) => {
+    // Optimization: do not do any mapping if nothing has changed in
+    // controller state tree
+    if (controller.hasChanges(prevState, state)) {
+      prevState = state
+      mappedState = Object.assign({ }, controller.$(state), dispatches)
+    }
+
+    assigner(nextProps, mappedState)
+  }
 }
 
 /**
@@ -80,13 +80,12 @@ function tryPropertyAsDispatch (controller, propName) {
 }
 
 export default function createMapper (getController, mappings, contextString) {
-  const dispatches = {}
-  const selectors = []
+  const mappers = []
 
   for (let i = 0; i < mappings.length; ++i) {
     const m = mappings[i]
 
-    if (m.dispatchAll || m.onlySelect) {
+    if (m.onlyDispatch || m.onlySelect) {
       // then path should contain a controller
       const controllerPath = m.path.join('.')
       const controller = getController(m.path.join('.'))
@@ -94,16 +93,18 @@ export default function createMapper (getController, mappings, contextString) {
         warning(
           `Controller is expected at path ${controllerPath} because it is ` +
           `required by '${controllerPath}.` +
-          `${m.dispatchAll ? 'dispatch*' : 'select*'}' mapping ` +
+          `${m.onlyDispatch ? 'dispatch*' : 'select*'}' mapping ` +
           `for ${contextString}.`
         )
         continue
       }
 
-      if (m.dispatchAll) {
-        resolveAllDispatches(controller, m.prop, dispatches)
+      if (m.onlyDispatch) {
+        mappers.push((state, nextProps) => {
+          m.assigner(nextProps, getAllDispatches(controller))
+        })
       } else {
-        selectors.push(createSelector(controller, [], m.prop))
+        mappers.push(createSelectorMapper(controller, [], m.assigner))
       }
     } else {
       // Check for the last controller at the path if any
@@ -114,12 +115,13 @@ export default function createMapper (getController, mappings, contextString) {
 
         if (controller) {
           if (j === m.path.length - 1) {
-            resolveAllDispatches(controller, m.prop, dispatches)
+            mappers.push(createFullControllerMapper(controller, m.assigner))
+            break
           } else {
             const dispatchKey = tryPropertyAsDispatch(controller, m.path[j + 1])
             if (dispatchKey) {
               // Mapping a dispatch function
-              const dispatch = controller[dispatchKey]
+              let dispatch = controller[dispatchKey]
 
               if (typeof dispatch !== 'function') {
                 warning(
@@ -136,12 +138,13 @@ export default function createMapper (getController, mappings, contextString) {
                 break
               }
 
-              dispatches[m.prop] = dispatch.bind(controller)
+              dispatch = dispatch.bind(controller)
+              mappers.push((state, nextProps) => m.assigner(nextProps, dispatch))
               break
             }
           }
 
-          selectors.push(createSelector(controller, m.path.slice(j + 1), m.prop))
+          mappers.push(createSelectorMapper(controller, m.path.slice(j + 1), m.assigner))
           break
         }
       }
@@ -164,7 +167,7 @@ export default function createMapper (getController, mappings, contextString) {
         if (controllersAtPath.length > 0) {
           let prevState, prevMappedState
 
-          selectors.push((state, nextProps) => {
+          mappers.push((state, nextProps) => {
             const subState = getSubState(state, m.path)
             const subStateChanged = subState !== getSubState(prevState, m.path)
 
@@ -173,7 +176,7 @@ export default function createMapper (getController, mappings, contextString) {
                 controller.hasChanges(prevState, state)))
 
             if (!subStateChanged && !hasChangedControllerStates) {
-              assignToProps(nextProps, prevMappedState, m.prop)
+              m.assigner(nextProps, prevMappedState)
             } else {
               let mappedState = Object.assign({ }, getSubState(state, m.path))
 
@@ -181,7 +184,7 @@ export default function createMapper (getController, mappings, contextString) {
                 assignToPath(mappedState, controller.$(state), subPath)
               })
 
-              assignToProps(nextProps, mappedState, m.prop)
+              m.assigner(nextProps, mappedState)
 
               prevState = state
               prevMappedState = mappedState
@@ -189,8 +192,8 @@ export default function createMapper (getController, mappings, contextString) {
           })
         } else {
           // Plain state without controllers
-          selectors.push((state, nextProps) => {
-            assignToProps(nextProps, getSubState(state, m.path), m.prop)
+          mappers.push((state, nextProps) => {
+            m.assigner(nextProps, getSubState(state, m.path))
           })
         }
       }
@@ -198,21 +201,8 @@ export default function createMapper (getController, mappings, contextString) {
   }
 
   return (state, props) => {
-    const nextProps = Object.assign({ }, props, dispatches)
-    selectors.forEach((sel) => sel(state, nextProps))
-
-    const dispatchKeys = Object.keys(dispatches)
-    for (let i = 0; i < dispatchKeys.length; ++i) {
-      const key = dispatchKeys[i]
-      const value = dispatches[key]
-
-      if (typeof value === 'function') {
-        nextProps[key] = value
-      } else {
-        nextProps[key] = Object.assign(nextProps[key] || { }, value)
-      }
-    }
-
+    const nextProps = Object.assign({ }, props)
+    mappers.forEach((mapper) => mapper(state, nextProps))
     return nextProps
   }
 }
