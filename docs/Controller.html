@@ -732,7 +732,7 @@ subclass if needed.</p>
 
     
 
-    <h4 class="name" id="$"><span class="type-signature"></span>$<span class="signature">(state, path<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="$"><span class="type-signature"></span>$<span class="signature">(state<span class="signature-attributes">opt</span>, path<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -741,7 +741,7 @@ subclass if needed.</p>
 <div class="description">
     <p>Select the value at specified path of the stored state. If no path is specified
 (any falsey value or <code>&quot;*&quot;</code>), the full state of the tree is returned. All the
-required selector functions are called in both cases, first level keys in teh state that
+required selector functions are called in both cases, first level keys in the state that
 start with underscore symbol (<code>_</code>) are considered &quot;private&quot; and ommitted.</p>
 </div>
 
@@ -778,7 +778,7 @@ start with underscore symbol (<code>_</code>) are considered &quot;private&quot;
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line265">line 265</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line269">line 269</a>
     </li></ul></dd>
     
 
@@ -839,6 +839,8 @@ start with underscore symbol (<code>_</code>) are considered &quot;private&quot;
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -850,7 +852,7 @@ start with underscore symbol (<code>_</code>) are considered &quot;private&quot;
 
             <td class="description last">
                 <p>The root of the state tree managed by the Redux
-   store.</p>
+   store. If ommitted, the function will operate on current state of the store.</p>
                 
             </td>
         </tr>
@@ -1044,7 +1046,7 @@ will be called and no dispatches to be added to the result.</p>
 
             <td class="description last">
                 <p>The root of the state tree managed by the Redux
-   store.</p>
+   store. If ommitted, the function will operate on current state of the store.</p>
                 
             </td>
         </tr>
@@ -1119,7 +1121,7 @@ At this point all of the controllers are created and store is initialized.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line381">line 381</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line387">line 387</a>
     </li></ul></dd>
     
 
@@ -1212,7 +1214,7 @@ override <a href="Controller.html#hasChanges">Controller.hasChanges</a> instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line423">line 423</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line429">line 429</a>
     </li></ul></dd>
     
 
@@ -1763,7 +1765,7 @@ dispatchAction("update.started", { objectId: "1" })</code></pre>
 
 
 <div class="description">
-    <p>This method is used by {#link Container} for optimizations. It checks if the state
+    <p>This method is used by <a href="global.html#Container">Container</a> for optimizations. It checks if the state
 was changed comparing to an old state, so selectors need to be reevaluated.
 By default it calls <a href="Controller.html#areStatesEqual">Controller.areStatesEqual</a>
 and returns the opposite boolean value.</p>
@@ -1803,7 +1805,7 @@ and returns the opposite boolean value.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line438">line 438</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line444">line 444</a>
     </li></ul></dd>
     
 
@@ -1960,7 +1962,7 @@ Redux reducer function will also work just fine.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line373">line 373</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line379">line 379</a>
     </li></ul></dd>
     
 
@@ -2082,7 +2084,7 @@ Redux reducer function will also work just fine.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line339">line 339</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line345">line 345</a>
     </li></ul></dd>
     
 
@@ -2252,7 +2254,7 @@ Redux reducer function will also work just fine.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line326">line 326</a>
+        <a href="Controller.js.html">Controller.js</a>, <a href="Controller.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -2370,7 +2372,7 @@ Redux reducer function will also work just fine.</p>
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Fri Jul 28 2017 18:40:45 GMT+0300 (EEST) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Tue Sep 26 2017 23:35:41 GMT+0300 (EEST) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
