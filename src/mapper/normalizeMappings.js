@@ -17,8 +17,11 @@ function createMapping (path, prop) {
     assigner = (nextProps, value) => {
       nextProps[prop] = value
     }
+  } else if (typeof prop === 'function') {
+    assigner = prop
   } else {
-    throw new Error(`Invalid value mapping for path ${path}, prop is not a string`)
+    throw new Error(`Invalid value mapping for path ${path}, ` +
+      `mapping to ${prop}, which is not a string or a function`)
   }
 
   if (path.length > 0 && path[path.length - 1] === 'dispatch*') {

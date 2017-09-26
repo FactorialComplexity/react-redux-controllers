@@ -33,4 +33,23 @@ describe('Container', () => {
     expect(wrapped.prop('foo')).toBe('bar')
     expect(typeof wrapped.prop('bar') === 'function')
   })
+
+  it('passes own props to wrapped component and custom assigning functions', () => {
+    expect.assertions(3)
+
+    const controller = new NoOpController()
+    const store = createStore(combineReducers({ controller }))
+
+    const TestComponent = () => (<div />)
+    const Wrapper = Container(TestComponent, {
+      'controller': (nextProps, value) => {
+        expect(nextProps.own).toBe('own foo')
+      }
+    })
+
+    const wrapper = mount(<Wrapper own='own foo' />, { context: { store } })
+    const wrapped = wrapper.find(TestComponent)
+
+    expect(wrapped.prop('own')).toBe('own foo')
+  })
 })
